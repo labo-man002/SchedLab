@@ -1,0 +1,11 @@
+{
+  "name": "schedlab",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Interactive educational laboratory for scheduling and cluster resource allocation",
+  "scripts": {
+    "test": "node tests/engine.test.js",
+    "check": "node --check site/engine.js && node --check site/app.js && npm test"
+  },
+  "engines": { "node": ">=20" }
+}
