@@ -19,6 +19,10 @@ Try the same scenario with:
 
 Controls include manual time advancement, auto-run, job submission, reset and real-time metrics.
 
+The guided lesson leads through three concrete steps: predict the FIFO outcome, observe head-of-line blocking, then replay the identical starting conditions with backfilling. Below it, the **fair replay** compares both policies over a selectable four-, eight-, or twelve-tick horizon. It reports how many queued jobs started or completed, their observed wait times, jobs still queued, and average occupied capacity. The replay runs independently of your live experiment.
+
+**How to interpret the numbers:** Average wait includes only jobs that started; waiting jobs are separately reported rather than assigned invented wait times. Occupancy includes initial resident jobs. Backfilling can help short jobs earlier while leaving a large job blocked, and any observed result applies to the chosen toy scenario and horizon only.
+
 **Important:** this is a small client-side *teaching model*. A contiguous slot is an abstract constraint, not a physical claim about GPU connectivity. This app is not a performance benchmark or an integration with Slurm, Kubernetes, or the [separate job-scheduling simulator](https://github.com/labo-man002/job-scheduler).
 
 ## Run locally
@@ -50,6 +54,7 @@ tests/
 docs/
   MVP_SPEC.md      Product definition, scope and acceptance criteria
   AUDIT.md         Initial audit and outstanding concerns
+  ROADMAP.md       Decision boundaries, learning roadmap and next milestones
 .github/workflows/
   pages.yml        Test and deploy to GitHub Pages
 ```
@@ -62,6 +67,6 @@ See [GitHub's documentation on publishing with a custom Actions workflow](https:
 
 ## Product direction
 
-The next step is not to pile on dashboards: it is to test whether one precise interactive experiment teaches a useful concept. Then expand into workload traces, topology-aware placement, fair policy comparisons and integration with the more capable simulator. See [MVP specification](docs/MVP_SPEC.md).
+The next step is to test whether one precise interactive experiment teaches a useful concept, then make the experiment shareable and inspectable. Later work can explore workload traces, topology-aware placement and integration with the more capable simulator. See [MVP specification](docs/MVP_SPEC.md) and [roadmap](docs/ROADMAP.md).
 
 **Project status:** exploratory alpha. Branding and software license remain decisions for the maintainer; no third-party contributions are solicited yet.

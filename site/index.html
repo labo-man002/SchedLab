@@ -17,7 +17,7 @@
         <a class="brand" href="#top" aria-label="SchedLab home">
           <span class="brand-mark"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M12 9 20 5l8 4v9l-8 4-8-4zM4 22l8-4 8 4v9l-8 4-8-4zM20 22l8-4 8 4v9l-8 4-8-4z" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linejoin="round"/></svg></span>
           <span class="brand-word">Sched<span>Lab</span></span>
-          <span class="beta-tag">ALPHA 0.1</span>
+          <span class="beta-tag">ALPHA 0.2</span>
         </a>
         <nav aria-label="Main navigation">
           <a class="active" href="#playground">Learn</a>
@@ -132,6 +132,15 @@
               <h3 id="explain-heading">The difference between free and usable.</h3>
               <p id="explain-text">Your cluster has 16 free slots. But the first queued job needs four adjacent slots within one rack. The largest available run is only two, so strict FIFO cannot start it. Switch to backfill to see smaller jobs use some of the gaps while the larger job waits.</p>
               <div class="tip-box"><span class="tip-icon">↗</span><span id="experiment-tip">Try switching to <strong>Opportunistic backfill</strong>, then reset and compare what runs.</span></div>
+              <div class="lesson-guide" id="lesson-guide" aria-labelledby="lesson-title">
+                <div class="lesson-meta"><span>GUIDED LESSON</span><span id="lesson-progress">1 / 3</span></div>
+                <h4 id="lesson-title">Predict the scheduler's next move.</h4>
+                <p id="lesson-body">Begin with a fragmented cluster. The first queued job needs a larger contiguous block than any rack currently offers.</p>
+                <div class="lesson-actions">
+                  <button class="button button-primary" type="button" id="lesson-action">Run strict FIFO for one tick →</button>
+                  <button class="lesson-restart" type="button" id="lesson-restart">Restart lesson</button>
+                </div>
+              </div>
             </section>
             <section class="event-card" aria-labelledby="events-heading">
               <div class="card-topline"><span class="section-number">EVENT STREAM</span><span class="stream-light">● LIVE</span></div>
@@ -139,6 +148,22 @@
               <ol id="event-list" class="event-list" aria-live="polite"></ol>
             </section>
           </div>
+
+          <section class="comparison-panel" aria-labelledby="comparison-title">
+            <div class="comparison-heading">
+              <div>
+                <div class="eyebrow subtle">EXPERIMENT / FAIR REPLAY</div>
+                <h3 id="comparison-title">Same workload. Two decisions.</h3>
+                <p>Compare FIFO and backfilling from the identical initial cluster. The replay is independent of the live simulation above.</p>
+              </div>
+              <div class="comparison-controls">
+                <label for="comparison-horizon">Replay horizon</label>
+                <select id="comparison-horizon"><option value="4">4 ticks</option><option value="8" selected>8 ticks</option><option value="12">12 ticks</option></select>
+                <button class="button button-outline" id="compare-btn" type="button">Compare policies ↗</button>
+              </div>
+            </div>
+            <div id="comparison-results" aria-live="polite"><p class="comparison-placeholder">Run a controlled replay to compare queue progress, waiting time and occupied capacity.</p></div>
+          </section>
         </section>
 
         <section class="how-section" id="learn-more" aria-labelledby="model-title">

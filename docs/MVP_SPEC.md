@@ -1,4 +1,4 @@
-# SchedLab — MVP product specification (draft v0.1)
+# SchedLab — MVP product specification (draft v0.2)
 
 **Status:** working draft for Khalil's review — 23 October 2026  
 **Working name:** SchedLab (not yet cleared for trademark/domain conflicts)  
@@ -22,7 +22,7 @@ The website is the learning and exploration interface. A separate, more capable 
 
 ## 3. MVP scope
 
-### Must have — release 0.1
+### Must have — initial alpha
 
 - Responsive site with recognizable project identity.
 - One interactive experiment: **Why can't my job run?**
@@ -33,11 +33,18 @@ The website is the learning and exploration interface. A separate, more capable 
 - Explicit assumptions, limitations and reproducible reset.
 - Public GitHub repository, GitHub Pages deployment and regression tests.
 
+### Implemented in alpha 0.2
+
+- Three-step learning journey: head-of-line blocking in strict FIFO, replay with opportunistic backfill, and the starvation caveat.
+- Deterministic FIFO/backfill side-by-side replay from identical preset workload, placement heuristic, and tick horizon.
+- Comparison of initially queued jobs started/completed, waiting time *of started jobs*, average occupied capacity, and jobs still queued.
+- A trace of occupied slots per tick; preset resident jobs count towards utilization but not queue-level outcomes.
+- Policy/placement changes no longer eagerly dispatch between ticks; queue submission waits for the next scheduler tick.
+
 ### Should have — next iteration
 
 - Scenario links or JSON import/export containing seed, topology, workload, policy and engine version.
-- Side-by-side policy comparison from identical initial state.
-- Job timeline/Gantt and summary metrics: waiting time, makespan, completion rate and utilization history.
+- Job timeline/Gantt, per-job wait inspection, and explicit censored-wait treatment.
 - Better guided onboarding and mobile/accessibility verification.
 - A second focused experiment about placement constraints across topology domains.
 
@@ -80,6 +87,7 @@ The website is the learning and exploration interface. A separate, more capable 
 - [x] Job completion releases slots; a previously blocked job can eventually launch.
 - [x] Reset reconstructs the exact scenario state, regardless of selected policy.
 - [x] The pure engine has automated tests and the website has no build-time dependencies.
+- [x] Guided FIFO/backfill progression and a fair, non-mutating replay comparison work in the local browser.
 - [ ] Browser smoke test for the GitHub Pages version on desktop and mobile.
 - [ ] GitHub Actions Pages deployment succeeds and publicly serves the site.
 - [ ] Owner reviews the wording, brand name and intended license.
@@ -98,4 +106,4 @@ Publish one short LinkedIn demonstration: *"My cluster is 50% free. Why can't my
 
 ## 10. Suggested next milestone
 
-One shareable, versioned scenario format plus a side-by-side FIFO/backfill replay that shows a waiting-time timeline and makes the comparison auditable. This would improve both Learn and Lab without broadening into unrelated infrastructure features.
+One shareable, versioned scenario format with a readable URL and a per-job timeline that makes policy comparison auditable. Preserve the same small teaching model while making experiments reproducible outside one browser session.

@@ -9,3 +9,41 @@
 @media (max-width:900px){.topbar nav{display:none}.hero{grid-template-columns:1fr;padding:65px 0}.hero-side{min-height:220px}.hero-abstract{height:105px}.orb-1{width:155px;height:155px}.orb-2{width:105px;height:105px}.orb-3{width:55px;height:55px}.lab-grid{grid-template-columns:1fr}.inspector{padding:0 25px 24px}.queue-list{max-height:none;display:grid;grid-template-columns:1fr 1fr}.lower-grid{grid-template-columns:1fr}.model-cards{grid-template-columns:1fr 1fr}.disclaimer{flex-wrap:wrap}}
 @media (max-width:600px){.shell{padding:0 16px}.topbar{height:74px}.brand-word{font-size:23px}.beta-tag{font-size:8px;margin-left:0}.nav-cta{display:none}.hero{padding:52px 0 58px}.hero h1{font-size:49px;letter-spacing:-3.2px}.hero-copy>p{font-size:14px}.hero-actions{gap:18px;flex-wrap:wrap}.hero-side{min-height:195px}.section-heading{align-items:start;flex-direction:column}.section-heading h2{font-size:36px}.mode-switch{width:100%}.mode-btn{flex:1}.panel-head{padding:17px 15px}.panel-title-group{font-size:9px;gap:7px}.panel-title-muted{display:none}.clock{font-size:9px}.clock strong{margin-left:4px}.scenario-row{padding:13px 15px}.cluster-stage{padding:19px 12px}.rack-row{grid-template-columns:49px minmax(0,1fr);gap:8px}.rack-label{font-size:9px}.cluster-column-labels,.legend{margin-left:56px}.slot-row{gap:3px}.slot{min-height:31px;font-size:8px}.legend{gap:12px}.legend-detail{display:none}.diagnosis{margin:0 12px 14px;padding:11px;font-size:11px}.control-deck{padding:13px}.control-buttons{display:grid;grid-template-columns:1fr 1fr}.control-buttons .button:first-child{grid-column:1/-1}.metric-grid{grid-template-columns:1fr 1fr}.metric:nth-child(2){border-right:0}.metric:nth-child(-n+2){border-bottom:1px solid #223e41}.metric strong{font-size:31px}.queue-list{grid-template-columns:1fr}.inspector{padding:0 15px 17px}.explainer-card,.event-card{padding:20px}.how-section{padding:75px 0 50px}.how-heading h2{font-size:39px;letter-spacing:-2px}.model-cards{grid-template-columns:1fr;gap:10px}.model-card{min-height:0}.disclaimer{padding:15px}.disclaimer a{margin-left:39px}footer{align-items:start;flex-direction:column;gap:8px}.footer-muted{display:block;margin:5px 0 0 0}}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{transition:none!important;animation:none!important}}
+
+/* Guided, reproducible learning experiences introduced in alpha 0.2. */
+[hidden]{display:none!important}
+.lesson-guide{margin-top:19px;border:1px solid #385d52;border-radius:8px;padding:18px 19px;background:linear-gradient(135deg,#173c36,#0e292b)}
+.lesson-meta{display:flex;justify-content:space-between;gap:12px;color:#8bd6b0;font:10px var(--mono);letter-spacing:.7px}
+.lesson-guide h4{font-size:16px;font-weight:600;line-height:1.35;letter-spacing:-.3px;margin:13px 0 5px;color:#ebfff3}
+.lesson-guide p{margin:6px 0 16px;color:#b9d3c7;font-size:12px;line-height:1.7}
+.lesson-actions{display:flex;align-items:center;flex-wrap:wrap;gap:10px}
+.lesson-actions .button{font-size:11px;min-height:38px;text-align:left}
+.lesson-restart{border:0;background:transparent;color:#a9d7c0;font-size:11px;padding:10px 5px;text-decoration:underline;text-underline-offset:3px}
+.lesson-restart:hover{color:#e2fff0}
+.comparison-panel{margin-top:17px;background:linear-gradient(160deg,#10282b,#0b1d22);border:1px solid #2b4d49;border-radius:10px;padding:25px 27px}
+.comparison-heading{display:flex;justify-content:space-between;align-items:end;flex-wrap:wrap;gap:20px}
+.comparison-heading h3{font-weight:600;font-size:24px;line-height:1.25;letter-spacing:-1px;margin:10px 0}
+.comparison-heading p{font-size:12px;color:#9fbab1;line-height:1.7;margin:0;max-width:620px}
+.comparison-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.comparison-controls label{color:#a9bfb4;font:10px var(--mono)}
+.comparison-controls select{padding:10px;background:#102d2d;color:#d6f0df;border:1px solid #44665e;border-radius:5px}
+.comparison-controls button{min-height:38px;font-size:11px}
+.comparison-placeholder{border-top:1px solid #2b4844;margin:24px 0 0;padding-top:20px;font-size:12px;color:#81aaa0}
+.comparison-table{width:100%;border-collapse:collapse;margin-top:25px;text-align:left;font-size:12px}
+.comparison-table caption{caption-side:bottom;text-align:left;color:#87b09e;font:10px var(--mono);padding-top:11px;line-height:1.5}
+.comparison-table tr{border-bottom:1px solid #2b4645}
+.comparison-table thead th{color:#86d5b2;font:10px var(--mono);padding:13px 11px;letter-spacing:.2px}
+.comparison-table tbody th{font-weight:500;color:#c1d4cb;padding:12px 11px}
+.comparison-table tbody td{color:#e4f7eb;font:12px var(--mono);padding:12px 11px;font-variant-numeric:tabular-nums}
+.comparison-table th:not(:first-child),.comparison-table td{text-align:right}
+.comparison-traces{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-top:20px}
+.trace-card{background:#102a2c;border:1px solid #284c46;border-radius:7px;padding:18px 18px 13px;min-width:0}
+.trace-card h4{font-size:11px;font-weight:600;line-height:1.45;color:#c4e2d4;margin:0 0 15px}
+.trace-bars{height:110px;display:flex;align-items:stretch;gap:7px;border-bottom:1px solid #547970;padding:0 4px 2px}
+.trace-column{flex:1;min-width:0;display:flex;justify-content:end;align-items:center;flex-direction:column;position:relative}
+.trace-bar{width:100%;max-width:25px;min-height:2px;border-radius:3px 3px 0 0;background:linear-gradient(180deg,#82dfb2,#307865)}
+.trace-column span{font:9px var(--mono);color:#81a79b;position:absolute;top:100%;padding-top:5px}
+.trace-card{padding-bottom:29px}
+.comparison-footnote{font-size:11px;color:#93b2a7;line-height:1.65;margin:18px 0 0}
+button:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid #a5eac1;outline-offset:3px}
+@media (max-width:700px){.comparison-panel{padding:21px 16px}.comparison-traces{grid-template-columns:1fr}.comparison-controls{width:100%}.comparison-heading h3{font-size:21px}.comparison-table{font-size:11px}.comparison-table thead th{font-size:9px}.comparison-table tbody th,.comparison-table tbody td{padding:11px 6px}.lesson-actions .button{width:100%}}

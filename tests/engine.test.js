@@ -84,3 +84,34 @@ test('invalid job requests are rejected', () => {
   assert.throws(() => Engine.submitJob(s, 'Too large', 9, 2), RangeError);
   assert.throws(() => Engine.submitJob(s, 'No time', 2, 0), RangeError);
 });
+
+test('policy comparison starts with exactly the same initial workload', () => {
+  const live = Engine.createState('fragmentation');
+  const baseline = structuredClone(live);
+  const a = Engine.comparePolicies('fragmentation', 'first', 1);
+  const b = Engine.comparePolicies('fragmentation', 'first', 1);
+
+  assert.deepEqual(a, b, 'two independent comparisons are deterministic');
+  assert.deepEqual(live, baseline, 'comparing policies must never change a live run');
+  assert.equal(a.fifo.summary.startedFromQueue, 0);
+  assert.equal(a.backfill.summary.startedFromQueue, 3);
+  assert.equal(a.fifo.summary.queuedAtEnd, 4);
+  assert.equal(a.backfill.summary.queuedAtEnd, 1);
+  assert.equal(a.fifo.timeline[0].time, 1);
+  assert.equal(a.backfill.timeline[0].time, 1);
+});
+
+test('comparison metrics use only initially queued jobs and document the horizon', () => {
+  const results = Engine.comparePolicies('fragmentation', 'first', 8);
+  for (const trace of Object.values(results)) {
+    assert.equal(trace.ticks, 8);
+    assert.equal(trace.timeline.length, 8);
+    assert.ok(trace.summary.averageUtilization >= 0 && trace.summary.averageUtilization <= 100);
+    assert.ok(trace.summary.startedFromQueue <= 4);
+    assert.ok(trace.summary.completedFromQueue <= trace.summary.startedFromQueue);
+    assert.equal(trace.summary.startedFromQueue + trace.summary.queuedAtEnd, 4);
+    if (trace.summary.averageWaitOfStarted !== null) assert.ok(trace.summary.averageWaitOfStarted >= 0);
+  }
+  assert.throws(() => Engine.runPolicyTrace('fragmentation', 'fifo', 'first', 0), RangeError);
+  assert.throws(() => Engine.runPolicyTrace('fragmentation', 'fifo', 'first', 101), RangeError);
+});

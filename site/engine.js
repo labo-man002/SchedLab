@@ -188,5 +188,54 @@
     return { used, free, utilization: used / CAPACITY * 100, largest: Math.max(0, ...freeSegments(state).map((segment) => segment.length)) };
   }
 
-  return { RACKS, SLOTS_PER_RACK, CAPACITY, createState, resetState, submitJob, appendEvent, occupancy, freeSegments, findPlacement, dispatchJobs, advanceTick, metrics };
+  // Replays a preset from T+00 without touching the UI's live simulation.
+  // Only jobs initially queued are counted in queue-level outcome metrics;
+  // residents are counted in utilization because they consume real capacity.
+  function runPolicyTrace(scenario, policy, placement = 'first', ticks = 8) {
+    if (!Number.isInteger(ticks) || ticks < 1 || ticks > 100) {
+      throw new RangeError('Comparison horizon must be an integer between 1 and 100 ticks.');
+    }
+    const simulation = createState(scenario, policy, placement);
+    const originalQueueIds = new Set(simulation.queued.map((job) => job.id));
+    const timeline = [];
+    let occupiedSlotTicks = 0;
+
+    for (let time = 1; time <= ticks; time += 1) {
+      advanceTick(simulation);
+      const snapshot = metrics(simulation);
+      occupiedSlotTicks += snapshot.used;
+      timeline.push({
+        time: simulation.time,
+        usedSlots: snapshot.used,
+        queuedJobs: simulation.queued.length,
+        completedJobs: simulation.completed.filter((job) => originalQueueIds.has(job.id)).length,
+      });
+    }
+
+    const originalJobs = [...simulation.running, ...simulation.completed, ...simulation.queued]
+      .filter((job) => originalQueueIds.has(job.id));
+    const started = originalJobs.filter((job) => job.startedAt !== null);
+    const completed = originalJobs.filter((job) => job.finishedAt !== null);
+    const totalWait = started.reduce((sum, job) => sum + job.startedAt - job.submittedAt, 0);
+
+    return {
+      scenario, policy, placement, ticks, timeline,
+      summary: {
+        startedFromQueue: started.length,
+        completedFromQueue: completed.length,
+        queuedAtEnd: simulation.queued.length,
+        averageUtilization: occupiedSlotTicks / (CAPACITY * ticks) * 100,
+        averageWaitOfStarted: started.length ? totalWait / started.length : null,
+      },
+    };
+  }
+
+  function comparePolicies(scenario = 'fragmentation', placement = 'first', ticks = 8) {
+    return {
+      fifo: runPolicyTrace(scenario, 'fifo', placement, ticks),
+      backfill: runPolicyTrace(scenario, 'backfill', placement, ticks),
+    };
+  }
+
+  return { RACKS, SLOTS_PER_RACK, CAPACITY, createState, resetState, submitJob, appendEvent, occupancy, freeSegments, findPlacement, dispatchJobs, advanceTick, metrics, runPolicyTrace, comparePolicies };
 });

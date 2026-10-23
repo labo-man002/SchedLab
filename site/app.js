@@ -10,12 +10,12 @@
   const Engine = window.SchedLabEngine;
   const RACKS = Engine.RACKS;
   const SLOTS_PER_RACK = Engine.SLOTS_PER_RACK;
-  const CAPACITY = Engine.CAPACITY;
   const $ = (id) => document.getElementById(id);
   const slotsLabel = (n) => `${n} ${n === 1 ? 'slot' : 'slots'}`;
   const state = Engine.createState();
   state.mode = 'learn';
   state.timer = null;
+  state.lessonStep = 0;
 
   function appendEvent(message, kind = 'info') {
     return Engine.appendEvent(state, message, kind);
@@ -23,6 +23,7 @@
 
   function initializeScenario(userReset = false) {
     stopAutoRun();
+    state.lessonStep = state.scenario === 'fragmentation' && state.policy === 'fifo' && state.placement === 'first' ? 0 : -1;
     Engine.resetState(state);
     if (userReset) appendEvent('Run reset to T+00. Selected policies were kept for fair replay.', 'info');
     render();
@@ -40,19 +41,12 @@
     return Engine.findPlacement(state, size);
   }
 
-  function freeSegments() {
-    return Engine.freeSegments(state);
-  }
-
-  function dispatchJobs(recordBlocked = true) {
-    return Engine.dispatchJobs(state, recordBlocked);
-  }
-
   function metrics() {
     return Engine.metrics(state);
   }
 
   function step() {
+    state.lessonStep = -1;
     Engine.advanceTick(state);
     render();
     if (state.timer && (state.time >= 30 || (!state.running.length && !state.queued.length))) stopAutoRun();
@@ -111,12 +105,6 @@
       row.append(label, slotRow);
       container.appendChild(row);
     });
-  }
-
-  function metrics() {
-    const used = state.running.reduce((sum, job) => sum + job.size, 0);
-    const free = CAPACITY - used;
-    return { used, free, utilization: used / CAPACITY * 100, largest: Math.max(0, ...freeSegments().map((segment) => segment.length)) };
   }
 
   function renderDiagnosis() {
@@ -211,6 +199,161 @@
     $('experiment-tip').innerHTML = learn
       ? 'Try switching to <strong>Opportunistic backfill</strong>, then reset and compare what runs.'
       : 'For a fair A/B observation, <strong>reset between policies</strong> and inspect utilization, queue progress, and the event stream.';
+    renderLesson();
+  }
+
+  const LESSON_STAGES = [
+    {
+      title: 'Predict the scheduler\'s next move.',
+      body: 'There are 16 free slots, but the largest contiguous rack-local block contains only two. What happens to a four-slot job at the head of a strict FIFO queue?',
+      action: 'Run strict FIFO for one tick →',
+    },
+    {
+      title: 'One blocked job holds the queue.',
+      body: 'At T+01, strict FIFO has not started any queued job. Smaller requests behind the four-slot job could fit, but this policy does not skip the head. Replay the exact same initial cluster with a different policy.',
+      action: 'Replay with backfilling →',
+    },
+    {
+      title: 'Progress is not a guarantee.',
+      body: 'At T+01, opportunistic backfill has started three smaller queued jobs while the large request still waits. This policy improves immediate progress here, but it does not reserve capacity or guarantee that the large job will start promptly.',
+      action: 'Explore freely in Lab →',
+    },
+  ];
+
+  function renderLesson() {
+    const guide = $('lesson-guide');
+    guide.hidden = state.mode !== 'learn';
+    if (state.lessonStep < 0) {
+      $('lesson-progress').textContent = 'FREE PLAY';
+      $('lesson-title').textContent = 'You are exploring your own experiment.';
+      $('lesson-body').textContent = 'Use the scheduler and placement controls above. Restart the guided lesson to compare both policies from the same fragmented starting point.';
+      $('lesson-action').textContent = 'Restart guided lesson →';
+      return;
+    }
+    const stage = LESSON_STAGES[state.lessonStep];
+    $('lesson-progress').textContent = `${state.lessonStep + 1} / 3`;
+    $('lesson-title').textContent = stage.title;
+    $('lesson-body').textContent = stage.body;
+    $('lesson-action').textContent = stage.action;
+  }
+
+  function restartLesson() {
+    stopAutoRun();
+    state.mode = 'learn';
+    state.scenario = 'fragmentation';
+    state.policy = 'fifo';
+    state.placement = 'first';
+    state.lessonStep = 0;
+    $('scenario').value = state.scenario;
+    $('policy').value = state.policy;
+    $('placement').value = state.placement;
+    Engine.resetState(state);
+    render();
+  }
+
+  function runGuidedStep() {
+    if (state.lessonStep < 0) { restartLesson(); return; }
+    if (state.lessonStep === 2) {
+      state.mode = 'lab';
+      renderMode();
+      return;
+    }
+    stopAutoRun();
+    state.scenario = 'fragmentation';
+    state.policy = state.lessonStep === 0 ? 'fifo' : 'backfill';
+    state.placement = 'first';
+    $('scenario').value = state.scenario;
+    $('policy').value = state.policy;
+    $('placement').value = state.placement;
+    Engine.resetState(state);
+    Engine.advanceTick(state);
+    state.lessonStep += 1;
+    render();
+  }
+
+  function clearComparison() {
+    const paragraph = document.createElement('p');
+    paragraph.className = 'comparison-placeholder';
+    paragraph.textContent = 'Run a controlled replay to compare queue progress, waiting time and occupied capacity.';
+    $('comparison-results').replaceChildren(paragraph);
+  }
+
+  function renderComparison() {
+    const ticks = Number($('comparison-horizon').value);
+    const result = Engine.comparePolicies(state.scenario, state.placement, ticks);
+    const container = $('comparison-results');
+    container.replaceChildren();
+
+    const table = document.createElement('table');
+    table.className = 'comparison-table';
+    const caption = document.createElement('caption');
+    caption.textContent = `Controlled ${ticks}-tick comparison for ${$('scenario').selectedOptions[0].textContent}, ${$('placement').selectedOptions[0].textContent}`;
+    table.appendChild(caption);
+    const header = document.createElement('thead');
+    const headerRow = document.createElement('tr');
+    ['MEASURE', 'STRICT FIFO', 'BACKFILL'].forEach((label) => {
+      const cell = document.createElement('th');
+      cell.scope = 'col';
+      cell.textContent = label;
+      headerRow.appendChild(cell);
+    });
+    header.appendChild(headerRow);
+    table.appendChild(header);
+    const body = document.createElement('tbody');
+    const a = result.fifo.summary;
+    const b = result.backfill.summary;
+    const percentage = (value) => `${value.toFixed(1)}%`;
+    const wait = (value) => value === null ? '—' : `${value.toFixed(2)} ticks`;
+    [
+      ['Queued jobs started', a.startedFromQueue, b.startedFromQueue],
+      ['Queued jobs completed', a.completedFromQueue, b.completedFromQueue],
+      ['Mean wait of started jobs', wait(a.averageWaitOfStarted), wait(b.averageWaitOfStarted)],
+      ['Mean occupied capacity', percentage(a.averageUtilization), percentage(b.averageUtilization)],
+      ['Jobs still queued', a.queuedAtEnd, b.queuedAtEnd],
+    ].forEach((values) => {
+      const row = document.createElement('tr');
+      values.forEach((value, i) => {
+        const cell = document.createElement(i === 0 ? 'th' : 'td');
+        if (i === 0) cell.scope = 'row';
+        cell.textContent = value;
+        row.appendChild(cell);
+      });
+      body.appendChild(row);
+    });
+    table.appendChild(body);
+    container.appendChild(table);
+
+    const traces = document.createElement('div');
+    traces.className = 'comparison-traces';
+    [['Strict FIFO', result.fifo], ['Opportunistic backfill', result.backfill]].forEach(([name, run]) => {
+      const card = document.createElement('div');
+      card.className = 'trace-card';
+      const title = document.createElement('h4');
+      title.textContent = `${name} · occupied slots after each tick`;
+      const bars = document.createElement('div');
+      bars.className = 'trace-bars';
+      bars.setAttribute('role', 'img');
+      bars.setAttribute('aria-label', `${name}: ${run.timeline.map((point) => `tick ${point.time}, ${point.usedSlots} of 32 slots`).join('; ')}`);
+      run.timeline.forEach((point) => {
+        const column = document.createElement('div');
+        column.className = 'trace-column';
+        const bar = document.createElement('div');
+        bar.className = 'trace-bar';
+        bar.style.height = `${point.usedSlots / Engine.CAPACITY * 100}%`;
+        bar.title = `T+${point.time}: ${point.usedSlots} / 32 slots occupied; ${point.queuedJobs} queued`;
+        const tick = document.createElement('span');
+        tick.textContent = point.time;
+        column.append(bar, tick);
+        bars.appendChild(column);
+      });
+      card.append(title, bars);
+      traces.appendChild(card);
+    });
+    container.appendChild(traces);
+    const footnote = document.createElement('p');
+    footnote.className = 'comparison-footnote';
+    footnote.textContent = 'Same preset, same placement heuristic, same integer-tick horizon. Mean occupancy includes preset resident jobs. Wait is averaged only over originally queued jobs that actually started; an unstarted job is not assigned an invented wait time. This is a toy model, not a benchmark.';
+    container.appendChild(footnote);
   }
 
   function render() {
@@ -237,31 +380,36 @@
     $('step-btn').addEventListener('click', () => { stopAutoRun(); step(); });
     $('play-btn').addEventListener('click', toggleAutoRun);
     $('reset-btn').addEventListener('click', () => initializeScenario(true));
-    $('scenario').addEventListener('change', (event) => { state.scenario = event.target.value; initializeScenario(); });
+    $('scenario').addEventListener('change', (event) => { state.scenario = event.target.value; initializeScenario(); clearComparison(); });
     $('policy').addEventListener('change', (event) => {
       stopAutoRun();
       state.policy = event.target.value;
-      appendEvent(`Scheduling policy changed to ${state.policy === 'fifo' ? 'strict FIFO' : 'opportunistic backfill'}.`);
-      dispatchJobs();
+      state.lessonStep = -1;
+      appendEvent(`Scheduling policy changed to ${state.policy === 'fifo' ? 'strict FIFO' : 'opportunistic backfill'}. Advance a tick to schedule, or reset for a fair replay.`);
       render();
     });
     $('placement').addEventListener('change', (event) => {
       stopAutoRun();
       state.placement = event.target.value;
-      appendEvent(`Placement heuristic changed to ${state.placement === 'first' ? 'first-fit' : 'tightest-fit'}.`);
-      dispatchJobs();
+      state.lessonStep = -1;
+      appendEvent(`Placement changed to ${state.placement === 'first' ? 'first-fit' : 'tightest-fit'}. Advance a tick to apply it.`);
+      clearComparison();
       render();
     });
     $('learn-mode').addEventListener('click', () => { state.mode = 'learn'; renderMode(); });
     $('lab-mode').addEventListener('click', () => { state.mode = 'lab'; renderMode(); });
+    $('lesson-action').addEventListener('click', runGuidedStep);
+    $('lesson-restart').addEventListener('click', restartLesson);
+    $('compare-btn').addEventListener('click', renderComparison);
+    $('comparison-horizon').addEventListener('change', clearComparison);
     $('job-form').addEventListener('submit', (event) => {
       event.preventDefault();
       stopAutoRun();
       const size = Number($('job-size').value);
       const duration = Number($('job-duration').value);
       const job = addQueued(`Custom workload ${state.nextId}`, size, duration);
-      appendEvent(`${job.id} submitted: ${slotsLabel(size)} for ${duration} ticks.`);
-      dispatchJobs();
+      state.lessonStep = -1;
+      appendEvent(`${job.id} queued: ${slotsLabel(size)} for ${duration} ticks. Advance a tick to schedule it.`);
       render();
     });
   }
