@@ -18,7 +18,7 @@
         <a class="brand" href="#top" aria-label="SchedLab home">
           <span class="brand-mark"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M12 9 20 5l8 4v9l-8 4-8-4zM4 22l8-4 8 4v9l-8 4-8-4zM20 22l8-4 8 4v9l-8 4-8-4z" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linejoin="round"/></svg></span>
           <span class="brand-word">Sched<span>Lab</span></span>
-          <span class="beta-tag">ALPHA 0.3</span>
+          <span class="beta-tag">ALPHA 0.4</span>
         </a>
         <nav aria-label="Main navigation">
           <a class="active" href="#playground">Learn</a>
@@ -146,6 +146,14 @@
                   <button class="button button-primary" type="button" id="lesson-action">Run strict FIFO for one tick →</button>
                   <button class="lesson-restart" type="button" id="lesson-restart">Restart lesson</button>
                 </div>
+                <fieldset class="lesson-check" id="lesson-check" hidden>
+                  <legend>Quick check: why was J09 blocked at T+00?</legend>
+                  <label><input type="radio" name="lesson-reason" value="total" /> Because the cluster had no free slots.</label>
+                  <label><input type="radio" name="lesson-reason" value="contiguous" /> Because no rack had four adjacent free slots.</label>
+                  <label><input type="radio" name="lesson-reason" value="all-idle" /> Because FIFO requires all racks to become idle.</label>
+                  <button type="button" class="lesson-check-btn" id="check-answer">Check my answer ↗</button>
+                  <p class="lesson-feedback" id="lesson-feedback" role="status" aria-live="polite"></p>
+                </fieldset>
               </div>
             </section>
             <section class="event-card" aria-labelledby="events-heading">

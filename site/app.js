@@ -242,6 +242,7 @@
   function renderLesson() {
     const guide = $('lesson-guide');
     guide.hidden = state.mode !== 'learn';
+    $('lesson-check').hidden = state.mode !== 'learn' || state.lessonStep !== 2;
     if (state.lessonStep < 0) {
       $('lesson-progress').textContent = 'FREE PLAY';
       $('lesson-title').textContent = 'You are exploring your own experiment.';
@@ -266,6 +267,8 @@
     $('scenario').value = state.scenario;
     $('policy').value = state.policy;
     $('placement').value = state.placement;
+    document.querySelectorAll('input[name="lesson-reason"]').forEach((radio) => { radio.checked = false; });
+    $('lesson-feedback').textContent = '';
     Engine.resetState(state);
     showShareStatus('The guided lesson has restored its canonical starting setup. Use Share to copy this preset.');
     render();
@@ -290,6 +293,17 @@
     state.lessonStep += 1;
     showShareStatus('The lesson changed your setup. Use Share to copy its selected preset and policy.');
     render();
+  }
+
+  function checkLessonAnswer() {
+    const chosen = document.querySelector('input[name="lesson-reason"]:checked');
+    if (!chosen) {
+      $('lesson-feedback').textContent = 'Choose one explanation, then check your answer.';
+    } else if (chosen.value === 'contiguous') {
+      $('lesson-feedback').textContent = 'Exactly. The cluster had 16 free slots, but each rack had only two-slot free runs. The four-slot request had no valid placement.';
+    } else {
+      $('lesson-feedback').textContent = 'Not quite. Think about the difference between total free slots and the largest rack-local contiguous block.';
+    }
   }
 
   function clearComparison() {
@@ -468,6 +482,7 @@
     $('lab-mode').addEventListener('click', () => { state.mode = 'lab'; renderMode(); });
     $('lesson-action').addEventListener('click', runGuidedStep);
     $('lesson-restart').addEventListener('click', restartLesson);
+    $('check-answer').addEventListener('click', checkLessonAnswer);
     $('compare-btn').addEventListener('click', renderComparison);
     $('comparison-horizon').addEventListener('change', () => { clearComparison(); showShareStatus('Replay horizon changed. Share creates a new link from the selected options.'); });
     $('share-btn').addEventListener('click', shareSetup);

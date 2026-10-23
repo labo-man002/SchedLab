@@ -14,6 +14,7 @@
 | Low | A network request for Google Fonts is made, though local fallbacks exist. | **Accepted for alpha.** Consider self-hosted fonts or system fonts for offline/privacy goals. |
 | Low | No accessibility automation, mobile device QA or performance testing has been added. | **Partly checked.** The guided lesson and comparison were tested by UI interactions in a desktop browser; mobile viewport and keyboard/screen-reader QA remain outstanding. |
 | Low | Sharing a browser experiment could inadvertently leak submitted job descriptions if live state were serialized into the URL. | **Guarded in alpha 0.3.** Share links have a strict `v=1` allowlist for preset, scheduler, placement and replay horizon. Free-form job names, credentials and runtime state are never encoded. |
+| Low | The landing experience showed a scheduling outcome without testing whether the learner understood the underlying constraint. | **Partly addressed in alpha 0.4.** A one-question knowledge check now reinforces the lesson; its feedback and reset behavior were checked in the desktop browser. |
 
 ## Security/privacy notes
 

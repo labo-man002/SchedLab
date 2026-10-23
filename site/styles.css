@@ -54,3 +54,11 @@ button:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid #a5e
 .share-button:hover{background:#235542}
 .share-control>span{color:#93ada4;font-size:10px;line-height:1.55;flex:1;min-width:190px}
 .share-control input{flex:1 1 100%;width:100%;padding:9px 11px;color:#d7f4e3;background:#0d2729;border:1px solid #568476;border-radius:5px;font:10px var(--mono)}
+
+.lesson-check{border:0;border-top:1px solid #466b59;margin:19px 0 0;padding:18px 0 0;min-width:0}
+.lesson-check legend{float:left;width:100%;font-weight:600;font-size:12px;color:#dbf5e3;padding:0 0 11px}
+.lesson-check label{display:flex;align-items:start;gap:9px;margin:9px 0;color:#b8d6c8;font-size:11px;line-height:1.6;cursor:pointer}
+.lesson-check input[type=radio]{accent-color:#89e5b3;margin-top:3px;flex:none}
+.lesson-check-btn{margin-top:10px;padding:9px 13px;border-radius:4px;color:#bdf7d5;background:#214d3d;border:1px solid #4c906e;font-size:11px}
+.lesson-check-btn:hover{background:#2b654b}
+.lesson-guide .lesson-feedback{color:#bde9c9;font-size:11px;margin:10px 0 0;line-height:1.6}

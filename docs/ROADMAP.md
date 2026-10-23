@@ -2,7 +2,7 @@
 
 **Updated:** 23 October 2026  
 **Owner:** Khalil Ben Maaoui  
-**Current release:** alpha 0.3 — one fully client-side teaching model
+**Current release:** alpha 0.4 — one fully client-side teaching model
 
 ## Purpose
 
@@ -21,7 +21,7 @@ Neither experience should promise to reproduce real HPC, Kubernetes or GPU clust
 | Strict FIFO and opportunistic backfill | Implemented | No priority, reservations or aging |
 | First-fit and tightest-fit allocation | Implemented | One rack-local contiguous segment |
 | Manual/automatic ticks, reset, custom jobs | Implemented | Non-preemptive, integer-tick jobs |
-| Guided FIFO/backfill lesson | Implemented | Preset conditions, three steps |
+| Guided FIFO/backfill lesson and comprehension check | Implemented | Preset conditions, three steps, one optional question |
 | Side-by-side policy replay and metrics | Implemented | Initial queue and fixed 4/8/12 tick horizon |
 | Versioned share links for built-in presets | Implemented | Encodes scenario, policy, heuristic and horizon only |
 | Custom scenario JSON import/export | Planned | Requires a validated schema and versioned engine contract |
@@ -34,7 +34,7 @@ Neither experience should promise to reproduce real HPC, Kubernetes or GPU clust
 
 - Browser/mobile accessibility checks: keyboard operation, contrast, control labels and small-screen layouts.
 - Make reset, tick and policy transitions easy to understand; no hidden state changes.
-- Add a one-question comprehension check: why a four-slot job waits when sixteen slots are free.
+- Gather learner feedback on the current one-question comprehension check; clarify any misleading answer choices.
 - Publish a concise technical note explaining exactly what the slot model assumes.
 
 **Evidence of success:** a new visitor can predict the blocked FIFO outcome and explain why smaller work starts under backfilling, without being told that the toy model is a real scheduler.

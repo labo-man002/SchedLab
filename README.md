@@ -21,6 +21,8 @@ Controls include manual time advancement, auto-run, job submission, reset and re
 
 The guided lesson leads through three concrete steps: predict the FIFO outcome, observe head-of-line blocking, then replay the identical starting conditions with backfilling. Below it, the **fair replay** compares both policies over a selectable four-, eight-, or twelve-tick horizon. It reports how many queued jobs started or completed, their observed wait times, jobs still queued, and average occupied capacity. The replay runs independently of your live experiment.
 
+At the end of the guided walkthrough, a one-question knowledge check tests the underlying reason for head-of-line blocking and gives immediate feedback. The lesson can be restarted without changing the comparison result.
+
 The **Share this setup** control makes a portable, versioned URL for the selected built-in scenario, scheduling policy, placement heuristic and replay horizon. Opening the URL starts at T+00 with exactly those settings. The link does **not** include custom jobs you submitted or the current simulation tick. If the browser blocks clipboard access, the URL appears in a field for manual copying.
 
 **How to interpret the numbers:** Average wait includes only jobs that started; waiting jobs are separately reported rather than assigned invented wait times. Occupancy includes initial resident jobs. Backfilling can help short jobs earlier while leaving a large job blocked, and any observed result applies to the chosen toy scenario and horizon only.

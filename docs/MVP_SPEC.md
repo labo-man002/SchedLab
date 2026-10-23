@@ -1,4 +1,4 @@
-# SchedLab — MVP product specification (draft v0.3)
+# SchedLab — MVP product specification (draft v0.4)
 
 **Status:** working draft for Khalil's review — 23 October 2026  
 **Working name:** SchedLab (not yet cleared for trademark/domain conflicts)  
@@ -33,7 +33,7 @@ The website is the learning and exploration interface. A separate, more capable 
 - Explicit assumptions, limitations and reproducible reset.
 - Public GitHub repository, GitHub Pages deployment and regression tests.
 
-### Implemented in alpha 0.2 and 0.3
+### Implemented in alpha 0.2–0.4
 
 - Three-step learning journey: head-of-line blocking in strict FIFO, replay with opportunistic backfill, and the starvation caveat.
 - Deterministic FIFO/backfill side-by-side replay from identical preset workload, placement heuristic, and tick horizon.
@@ -41,6 +41,7 @@ The website is the learning and exploration interface. A separate, more capable 
 - A trace of occupied slots per tick; preset resident jobs count towards utilization but not queue-level outcomes.
 - Policy/placement changes no longer eagerly dispatch between ticks; queue submission waits for the next scheduler tick.
 - Shareable, validated `v=1` preset links for the selected scenario, scheduling policy, placement heuristic and comparison horizon. These restore T+00 without exporting custom jobs or a live state snapshot.
+- Optional single-question comprehension check, shown only at the end of the guided walkthrough, with explanation of the rack-local contiguity constraint.
 
 ### Should have — next iteration
 
