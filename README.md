@@ -21,6 +21,8 @@ Controls include manual time advancement, auto-run, job submission, reset and re
 
 The guided lesson leads through three concrete steps: predict the FIFO outcome, observe head-of-line blocking, then replay the identical starting conditions with backfilling. Below it, the **fair replay** compares both policies over a selectable four-, eight-, or twelve-tick horizon. It reports how many queued jobs started or completed, their observed wait times, jobs still queued, and average occupied capacity. The replay runs independently of your live experiment.
 
+The **Share this setup** control makes a portable, versioned URL for the selected built-in scenario, scheduling policy, placement heuristic and replay horizon. Opening the URL starts at T+00 with exactly those settings. The link does **not** include custom jobs you submitted or the current simulation tick. If the browser blocks clipboard access, the URL appears in a field for manual copying.
+
 **How to interpret the numbers:** Average wait includes only jobs that started; waiting jobs are separately reported rather than assigned invented wait times. Occupancy includes initial resident jobs. Backfilling can help short jobs earlier while leaving a large job blocked, and any observed result applies to the chosen toy scenario and horizon only.
 
 **Important:** this is a small client-side *teaching model*. A contiguous slot is an abstract constraint, not a physical claim about GPU connectivity. This app is not a performance benchmark or an integration with Slurm, Kubernetes, or the [separate job-scheduling simulator](https://github.com/labo-man002/job-scheduler).
@@ -48,9 +50,11 @@ site/
   index.html       UI and educational content
   styles.css       Responsive styles
   engine.js        Pure deterministic simulation engine
+  share.js         Versioned, validated preset-link codec
   app.js           Browser rendering and interactions
 tests/
   engine.test.js   Engine and reset regression tests
+  share.test.js    Share-link validation and round-trip tests
 docs/
   MVP_SPEC.md      Product definition, scope and acceptance criteria
   AUDIT.md         Initial audit and outstanding concerns

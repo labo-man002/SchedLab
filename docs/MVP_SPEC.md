@@ -1,4 +1,4 @@
-# SchedLab — MVP product specification (draft v0.2)
+# SchedLab — MVP product specification (draft v0.3)
 
 **Status:** working draft for Khalil's review — 23 October 2026  
 **Working name:** SchedLab (not yet cleared for trademark/domain conflicts)  
@@ -33,17 +33,18 @@ The website is the learning and exploration interface. A separate, more capable 
 - Explicit assumptions, limitations and reproducible reset.
 - Public GitHub repository, GitHub Pages deployment and regression tests.
 
-### Implemented in alpha 0.2
+### Implemented in alpha 0.2 and 0.3
 
 - Three-step learning journey: head-of-line blocking in strict FIFO, replay with opportunistic backfill, and the starvation caveat.
 - Deterministic FIFO/backfill side-by-side replay from identical preset workload, placement heuristic, and tick horizon.
 - Comparison of initially queued jobs started/completed, waiting time *of started jobs*, average occupied capacity, and jobs still queued.
 - A trace of occupied slots per tick; preset resident jobs count towards utilization but not queue-level outcomes.
 - Policy/placement changes no longer eagerly dispatch between ticks; queue submission waits for the next scheduler tick.
+- Shareable, validated `v=1` preset links for the selected scenario, scheduling policy, placement heuristic and comparison horizon. These restore T+00 without exporting custom jobs or a live state snapshot.
 
 ### Should have — next iteration
 
-- Scenario links or JSON import/export containing seed, topology, workload, policy and engine version.
+- Versioned JSON import/export for **custom** topologies and workloads, including engine version and optional seed; the current share links cover only built-in preset configurations.
 - Job timeline/Gantt, per-job wait inspection, and explicit censored-wait treatment.
 - Better guided onboarding and mobile/accessibility verification.
 - A second focused experiment about placement constraints across topology domains.
@@ -106,4 +107,4 @@ Publish one short LinkedIn demonstration: *"My cluster is 50% free. Why can't my
 
 ## 10. Suggested next milestone
 
-One shareable, versioned scenario format with a readable URL and a per-job timeline that makes policy comparison auditable. Preserve the same small teaching model while making experiments reproducible outside one browser session.
+A validated custom scenario format plus a per-job timeline that makes policy comparison auditable. Keep the current preset URL format stable (`v=1`) and continue to distinguish it from a full live-state export.

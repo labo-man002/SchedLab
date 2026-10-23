@@ -13,6 +13,7 @@
 | Medium | The demo is not integrated with the separate scheduling-simulator repository. | **Deferred.** Keep adapters and reproducibility criteria in the MVP spec. |
 | Low | A network request for Google Fonts is made, though local fallbacks exist. | **Accepted for alpha.** Consider self-hosted fonts or system fonts for offline/privacy goals. |
 | Low | No accessibility automation, mobile device QA or performance testing has been added. | **Partly checked.** The guided lesson and comparison were tested by UI interactions in a desktop browser; mobile viewport and keyboard/screen-reader QA remain outstanding. |
+| Low | Sharing a browser experiment could inadvertently leak submitted job descriptions if live state were serialized into the URL. | **Guarded in alpha 0.3.** Share links have a strict `v=1` allowlist for preset, scheduler, placement and replay horizon. Free-form job names, credentials and runtime state are never encoded. |
 
 ## Security/privacy notes
 
@@ -20,7 +21,7 @@ No authentication, cookies, personal-data collection, API keys or backend are pr
 
 ## Acceptance checks performed
 
-- Static syntax validation and automated engine regression tests.
+- Static syntax validation and automated engine and preset-link regression tests.
 - Previously deployed prototype visually inspected at desktop width; job backfilling and releases exercised interactively.
 - New repository version smoke-tested in a local browser preview: backfilling advanced the model, then reset restored the original eight running jobs, four queued jobs, 16 free slots and T+00 while retaining the selected policy.
 - GitHub Pages version still requires desktop and mobile smoke tests after deployment.

@@ -47,3 +47,10 @@
 .comparison-footnote{font-size:11px;color:#93b2a7;line-height:1.65;margin:18px 0 0}
 button:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid #a5eac1;outline-offset:3px}
 @media (max-width:700px){.comparison-panel{padding:21px 16px}.comparison-traces{grid-template-columns:1fr}.comparison-controls{width:100%}.comparison-heading h3{font-size:21px}.comparison-table{font-size:11px}.comparison-table thead th{font-size:9px}.comparison-table tbody th,.comparison-table tbody td{padding:11px 6px}.lesson-actions .button{width:100%}}
+
+/* Link sharing always encodes only selected preset/configuration values. */
+.share-control{display:flex;align-items:center;flex-wrap:wrap;gap:11px;margin-top:13px;padding-top:13px;border-top:1px solid #23423e}
+.share-button{border:1px solid #4b8069;background:#163a32;color:#a9f4cd;border-radius:5px;padding:9px 12px;font:11px var(--mono);white-space:nowrap}
+.share-button:hover{background:#235542}
+.share-control>span{color:#93ada4;font-size:10px;line-height:1.55;flex:1;min-width:190px}
+.share-control input{flex:1 1 100%;width:100%;padding:9px 11px;color:#d7f4e3;background:#0d2729;border:1px solid #568476;border-radius:5px;font:10px var(--mono)}

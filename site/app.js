@@ -8,6 +8,7 @@
   'use strict';
 
   const Engine = window.SchedLabEngine;
+  const Share = window.SchedLabShare;
   const RACKS = Engine.RACKS;
   const SLOTS_PER_RACK = Engine.SLOTS_PER_RACK;
   const $ = (id) => document.getElementById(id);
@@ -192,12 +193,30 @@
     $('learn-mode').setAttribute('aria-pressed', String(learn));
     $('lab-mode').setAttribute('aria-pressed', String(!learn));
     $('note-mode').textContent = learn ? 'LEARN MODE' : 'LAB MODE';
-    $('explain-heading').textContent = learn ? 'The difference between free and usable.' : 'Interpret the allocation constraints.';
+    const notes = {
+      fragmentation: {
+        heading: 'The difference between free and usable.',
+        description: 'A job does not simply need enough free slots. In this toy cluster, every job needs an adjacent block within one rack. Free capacity scattered into small segments may be unusable for a larger request. Backfilling can use smaller gaps while the head-of-line job waits.',
+        tip: 'Try switching to <strong>Opportunistic backfill</strong>, then reset and compare what runs.',
+      },
+      backfill: {
+        heading: 'How a busy cluster blocks larger work.',
+        description: 'Only eight slots are initially free, split into two-slot runs across four racks. The six-slot head-of-line job cannot start; smaller jobs behind it may fit under backfill.',
+        tip: 'Compare <strong>strict FIFO</strong> and <strong>opportunistic backfill</strong> over identical initial states.',
+      },
+      empty: {
+        heading: 'Build a queue from an empty cluster.',
+        description: 'All 32 slots are initially available, so the scheduler can place several queued jobs on the first tick. Observe how ordering and contiguous rack-local placement change the remaining space.',
+        tip: 'Advance one tick, then <strong>reset</strong> to compare first-fit and tightest-fit placement.',
+      },
+    };
+    const note = notes[state.scenario];
+    $('explain-heading').textContent = learn ? note.heading : 'Interpret the allocation constraints.';
     $('explain-text').textContent = learn
-      ? 'A job does not simply need enough free slots. In this toy cluster, every job needs an adjacent block within one rack. Free capacity scattered across racks or split into small segments may be unusable for a larger request. Backfilling can use smaller gaps while the head-of-line job waits.'
+      ? note.description
       : 'Compare placement and dispatch outcomes under identical initial conditions. Allocation is non-preemptive. Completion occurs after integer ticks. First-fit selects the earliest qualifying rack segment; tightest-fit selects the smallest qualifying segment. Opportunistic backfill has no reservations or starvation protections in this model.';
     $('experiment-tip').innerHTML = learn
-      ? 'Try switching to <strong>Opportunistic backfill</strong>, then reset and compare what runs.'
+      ? note.tip
       : 'For a fair A/B observation, <strong>reset between policies</strong> and inspect utilization, queue progress, and the event stream.';
     renderLesson();
   }
@@ -248,6 +267,7 @@
     $('policy').value = state.policy;
     $('placement').value = state.placement;
     Engine.resetState(state);
+    showShareStatus('The guided lesson has restored its canonical starting setup. Use Share to copy this preset.');
     render();
   }
 
@@ -268,6 +288,7 @@
     Engine.resetState(state);
     Engine.advanceTick(state);
     state.lessonStep += 1;
+    showShareStatus('The lesson changed your setup. Use Share to copy its selected preset and policy.');
     render();
   }
 
@@ -276,6 +297,51 @@
     paragraph.className = 'comparison-placeholder';
     paragraph.textContent = 'Run a controlled replay to compare queue progress, waiting time and occupied capacity.';
     $('comparison-results').replaceChildren(paragraph);
+  }
+
+  function showShareStatus(message) {
+    $('share-status').textContent = message;
+    $('share-link').hidden = true;
+  }
+
+  async function shareSetup() {
+    const config = {
+      scenario: state.scenario,
+      policy: state.policy,
+      placement: state.placement,
+      ticks: Number($('comparison-horizon').value),
+    };
+    const url = Share.makeURL(window.location.href, config);
+    const link = $('share-link');
+    link.hidden = false;
+    link.value = url;
+    try {
+      if (!navigator.clipboard || !navigator.clipboard.writeText) throw new Error('Clipboard unavailable');
+      await navigator.clipboard.writeText(url);
+      $('share-status').textContent = 'Link copied! This reproduces the initial preset and selected policies, not the current run.';
+    } catch (_) {
+      $('share-status').textContent = 'Your browser blocked automatic copying. Select and copy the link in the field below.';
+      link.focus();
+      link.select();
+    }
+  }
+
+  function loadShareSelection() {
+    const decoded = Share.decode(window.location.search);
+    if (!decoded) return;
+    if (decoded.error) {
+      showShareStatus(`${decoded.error} Showing the default experiment instead.`);
+      return;
+    }
+    const config = decoded.config;
+    state.scenario = config.scenario;
+    state.policy = config.policy;
+    state.placement = config.placement;
+    $('scenario').value = config.scenario;
+    $('policy').value = config.policy;
+    $('placement').value = config.placement;
+    $('comparison-horizon').value = String(config.ticks);
+    showShareStatus('Shared setup loaded. Press Advance 1 tick to reproduce the run, or compare both policies below.');
   }
 
   function renderComparison() {
@@ -380,12 +446,13 @@
     $('step-btn').addEventListener('click', () => { stopAutoRun(); step(); });
     $('play-btn').addEventListener('click', toggleAutoRun);
     $('reset-btn').addEventListener('click', () => initializeScenario(true));
-    $('scenario').addEventListener('change', (event) => { state.scenario = event.target.value; initializeScenario(); clearComparison(); });
+    $('scenario').addEventListener('change', (event) => { state.scenario = event.target.value; initializeScenario(); clearComparison(); showShareStatus('Setup changed. Share creates a new link from the selected options.'); });
     $('policy').addEventListener('change', (event) => {
       stopAutoRun();
       state.policy = event.target.value;
       state.lessonStep = -1;
       appendEvent(`Scheduling policy changed to ${state.policy === 'fifo' ? 'strict FIFO' : 'opportunistic backfill'}. Advance a tick to schedule, or reset for a fair replay.`);
+      showShareStatus('Setup changed. Share creates a new link from the selected options.');
       render();
     });
     $('placement').addEventListener('change', (event) => {
@@ -394,6 +461,7 @@
       state.lessonStep = -1;
       appendEvent(`Placement changed to ${state.placement === 'first' ? 'first-fit' : 'tightest-fit'}. Advance a tick to apply it.`);
       clearComparison();
+      showShareStatus('Setup changed. Share creates a new link from the selected options.');
       render();
     });
     $('learn-mode').addEventListener('click', () => { state.mode = 'learn'; renderMode(); });
@@ -401,7 +469,8 @@
     $('lesson-action').addEventListener('click', runGuidedStep);
     $('lesson-restart').addEventListener('click', restartLesson);
     $('compare-btn').addEventListener('click', renderComparison);
-    $('comparison-horizon').addEventListener('change', clearComparison);
+    $('comparison-horizon').addEventListener('change', () => { clearComparison(); showShareStatus('Replay horizon changed. Share creates a new link from the selected options.'); });
+    $('share-btn').addEventListener('click', shareSetup);
     $('job-form').addEventListener('submit', (event) => {
       event.preventDefault();
       stopAutoRun();
@@ -415,6 +484,7 @@
   }
 
   wireControls();
+  loadShareSelection();
   initializeScenario();
   window.SchedLabDemo = { getState: () => JSON.parse(JSON.stringify({ time: state.time, scenario: state.scenario, policy: state.policy, placement: state.placement, running: state.running, queued: state.queued, completed: state.completed, metrics: metrics() })), advanceTicks };
 })();

@@ -2,7 +2,7 @@
 
 **Updated:** 23 October 2026  
 **Owner:** Khalil Ben Maaoui  
-**Current release:** alpha 0.2 — one fully client-side teaching model
+**Current release:** alpha 0.3 — one fully client-side teaching model
 
 ## Purpose
 
@@ -23,7 +23,8 @@ Neither experience should promise to reproduce real HPC, Kubernetes or GPU clust
 | Manual/automatic ticks, reset, custom jobs | Implemented | Non-preemptive, integer-tick jobs |
 | Guided FIFO/backfill lesson | Implemented | Preset conditions, three steps |
 | Side-by-side policy replay and metrics | Implemented | Initial queue and fixed 4/8/12 tick horizon |
-| Scenario serialization and sharable links | Planned | Define schema before making URLs |
+| Versioned share links for built-in presets | Implemented | Encodes scenario, policy, heuristic and horizon only |
+| Custom scenario JSON import/export | Planned | Requires a validated schema and versioned engine contract |
 | Graph topology, GPU network penalties, and contention | Research direction | Not implemented in SchedLab |
 | Live cluster telemetry and production integration | Out of scope | No cluster credentials or backend |
 
@@ -42,7 +43,7 @@ Neither experience should promise to reproduce real HPC, Kubernetes or GPU clust
 
 - Introduce a small versioned JSON scenario format for racks, running jobs and queued jobs.
 - Validate sizes, slot uniqueness, same-rack constraints, remaining time, policy and heuristic.
-- Add shareable links for bounded, encoded preset/configuration inputs, plus import/export for larger payloads.
+- Preserve `v=1` preset links; introduce a separate validated import/export workflow for larger custom payloads.
 - Show per-job timeline: submitted → started → completed, including still-unstarted jobs as censored observations.
 - Add seed/version metadata if and only if nondeterministic generators are introduced.
 

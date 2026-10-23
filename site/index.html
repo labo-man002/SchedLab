@@ -8,6 +8,7 @@
     <title>SchedLab — Learn by breaking the scheduler</title>
     <link rel="stylesheet" href="./styles.css" />
     <script src="./engine.js" defer></script>
+    <script src="./share.js" defer></script>
     <script src="./app.js" defer></script>
   </head>
   <body>
@@ -17,7 +18,7 @@
         <a class="brand" href="#top" aria-label="SchedLab home">
           <span class="brand-mark"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M12 9 20 5l8 4v9l-8 4-8-4zM4 22l8-4 8 4v9l-8 4-8-4zM20 22l8-4 8 4v9l-8 4-8-4z" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linejoin="round"/></svg></span>
           <span class="brand-word">Sched<span>Lab</span></span>
-          <span class="beta-tag">ALPHA 0.2</span>
+          <span class="beta-tag">ALPHA 0.3</span>
         </a>
         <nav aria-label="Main navigation">
           <a class="active" href="#playground">Learn</a>
@@ -94,6 +95,11 @@
                   <button class="button button-ghost" id="reset-btn" title="Restore the scenario at T+00, keeping the selected policies">↺ Reset run</button>
                 </div>
                 <span class="control-hint">Each tick advances running jobs and dispatches eligible work.</span>
+                <div class="share-control">
+                  <button class="share-button" type="button" id="share-btn">↗ Share this setup</button>
+                  <span id="share-status" role="status" aria-live="polite">Shares the preset, policies and comparison horizon—not submitted jobs or the current tick.</span>
+                  <input type="text" id="share-link" aria-label="Scenario URL to copy manually" readonly hidden />
+                </div>
               </div>
 
               <div class="metric-grid" aria-label="Cluster metrics">
