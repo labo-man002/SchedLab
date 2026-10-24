@@ -76,24 +76,26 @@
               </div>
 
               <div class="cluster-stage">
-                <div class="cluster-column-labels"><span>NODE 01</span><span>NODE 04</span><span>NODE 08</span></div>
+                <div class="cluster-column-labels"><span>SLOT 01</span><span>SLOT 04</span><span>SLOT 08</span></div>
                 <div id="rack-grid" class="rack-grid" aria-label="Cluster rack occupancy"></div>
                 <div class="legend">
                   <span><i class="legend-box occupied"></i> Running</span>
                   <span><i class="legend-box available"></i> Available</span>
                   <span><i class="legend-box released"></i> Candidate</span>
-                  <span class="legend-detail">Hover a node for details</span>
+                  <span class="legend-detail">Select a slot for details</span>
                 </div>
+                <p id="slot-detail" class="slot-detail">Select a slot with Enter, Space or touch to inspect it. Filled slots show a dot; candidates have a dashed border.</p>
               </div>
 
-              <div class="diagnosis" id="diagnosis" role="status" aria-live="polite"></div>
+              <div class="diagnosis" id="diagnosis"></div>
 
               <div class="control-deck">
                 <div class="control-buttons">
                   <button class="button button-primary" id="step-btn"><span class="button-icon">↦</span> Advance 1 tick</button>
-                  <button class="button button-outline" id="play-btn"><span id="play-icon">▶</span> <span id="play-label">Auto run</span></button>
+                  <button class="button button-outline" id="play-btn" aria-pressed="false"><span id="play-icon">▶</span> <span id="play-label">Auto run</span></button>
                   <button class="button button-ghost" id="reset-btn" title="Restore the scenario at T+00, keeping the selected policies">↺ Reset run</button>
                 </div>
+                <p id="run-status" class="run-status" role="status" aria-atomic="true">Ready at T+00. Advance a tick to schedule queued work.</p>
                 <span class="control-hint">Each tick advances running jobs and dispatches eligible work.</span>
                 <div class="share-control">
                   <button class="share-button" type="button" id="share-btn">↗ Share this setup</button>
@@ -112,15 +114,16 @@
 
             <aside class="inspector" aria-label="Scheduling controls and jobs">
               <div class="inspector-head"><div><span class="inspector-kicker">CONTROL ROOM</span><h3>Scheduler settings</h3></div><span class="settings-icon">⚙</span></div>
-              <label class="field-label" for="policy">Scheduling policy <span class="hint-dot" title="FIFO blocks the queue at its first job. Backfill can run smaller eligible jobs behind a blocked head-of-line job.">ⓘ</span></label>
-              <select class="field-select" id="policy"><option value="fifo">Strict FIFO</option><option value="backfill">Opportunistic backfill</option></select>
-              <label class="field-label" for="placement">Placement heuristic <span class="hint-dot" title="First-fit selects the first valid free segment. Tightest-fit chooses the segment with the least leftover capacity.">ⓘ</span></label>
-              <select class="field-select" id="placement"><option value="first">First-fit</option><option value="tight">Tightest-fit</option></select>
+              <label class="field-label" for="policy">Scheduling policy </label>
+              <select class="field-select" id="policy" aria-describedby="policy-description"><option value="fifo">Strict FIFO</option><option value="backfill">Opportunistic backfill</option></select>
+              <label class="field-label" for="placement">Placement heuristic </label>
+              <select class="field-select" id="placement" aria-describedby="placement-description"><option value="first">First-fit</option><option value="tight">Tightest-fit</option></select>
               <p class="settings-caption" id="policy-description">FIFO waits if the job at the front of the queue cannot be placed.</p>
 
+              <p class="settings-caption" id="placement-description">First-fit selects the first valid free segment; tightest-fit selects the smallest fitting segment.</p>
               <div class="inspector-divider"></div>
               <div class="queue-heading"><h3>Job queue</h3><span id="queue-chip" class="count-chip">4 waiting</span></div>
-              <div id="queue-list" class="queue-list" aria-live="polite"></div>
+              <div id="queue-list" class="queue-list"></div>
 
               <div class="inspector-divider"></div>
               <div class="job-form-head"><h3>Submit a job</h3><span>TRY IT YOURSELF</span></div>
@@ -159,9 +162,22 @@
             <section class="event-card" aria-labelledby="events-heading">
               <div class="card-topline"><span class="section-number">EVENT STREAM</span><span class="stream-light">● LIVE</span></div>
               <h3 id="events-heading">What's happening</h3>
-              <ol id="event-list" class="event-list" aria-live="polite"></ol>
+              <ol id="event-list" class="event-list"></ol>
             </section>
           </div>
+
+          <details class="lifecycle-panel" id="lifecycle-panel">
+            <summary>Inspect job lifecycles · live experiment</summary>
+            <p id="lifecycle-help">Inspect when each job was submitted, started and completed. Initial residents already occupy slots at T+00; their prior queue waits are unknown. Still-waiting ages are lower bounds, not completed waits or inputs to the replay's mean wait.</p>
+            <p class="scroll-hint" id="lifecycle-scroll-hint">On narrow screens, scroll the table horizontally; keyboard users can focus this region and use arrow keys.</p>
+            <div class="table-scroll" role="region" aria-label="Live job lifecycle table" aria-describedby="lifecycle-scroll-hint" tabindex="0">
+              <table class="lifecycle-table" aria-describedby="lifecycle-help">
+                <caption id="lifecycle-caption">Live jobs at T+00 · independent of the controlled replay</caption>
+                <thead><tr><th scope="col">Job</th><th scope="col">State</th><th scope="col">Timing</th><th scope="col">Queue wait</th><th scope="col">Allocation / runtime</th></tr></thead>
+                <tbody id="lifecycle-rows"></tbody>
+              </table>
+            </div>
+          </details>
 
           <section class="comparison-panel" aria-labelledby="comparison-title">
             <div class="comparison-heading">
@@ -176,7 +192,7 @@
                 <button class="button button-outline" id="compare-btn" type="button">Compare policies ↗</button>
               </div>
             </div>
-            <div id="comparison-results" aria-live="polite"><p class="comparison-placeholder">Run a controlled replay to compare queue progress, waiting time and occupied capacity.</p></div>
+            <div id="comparison-results"><p class="comparison-placeholder">Run a controlled replay to compare queue progress, waiting time and occupied capacity.</p></div>
           </section>
         </section>
 

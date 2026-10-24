@@ -115,3 +115,91 @@ test('comparison metrics use only initially queued jobs and document the horizon
   assert.throws(() => Engine.runPolicyTrace('fragmentation', 'fifo', 'first', 0), RangeError);
   assert.throws(() => Engine.runPolicyTrace('fragmentation', 'fifo', 'first', 101), RangeError);
 });
+
+test('lifecycle distinguishes initial residents from unstarted queue observations', () => {
+  const s = Engine.createState();
+  const before = structuredClone(s);
+  const rows = Engine.jobLifecycles(s);
+  assert.equal(rows.length, 12);
+  const residents = rows.filter((job) => job.resident);
+  assert.equal(residents.length, 8);
+  for (const job of residents) {
+    assert.equal(job.status, 'running');
+    assert.equal(job.submittedAt, null);
+    assert.equal(job.startedAt, 0);
+    assert.equal(job.wait, null, 'resident queue wait is unknown, not zero');
+  }
+  for (const job of rows.filter((job) => !job.resident)) {
+    assert.equal(job.status, 'queued');
+    assert.equal(job.startedAt, null);
+    assert.equal(job.finishedAt, null);
+    assert.equal(job.wait, null);
+    assert.equal(job.waitingAtLeast, 0);
+  }
+  rows[0].slots.push(99);
+  rows[0].name = 'Changed snapshot';
+  assert.deepEqual(s, before, 'derived rows must not alias or mutate live jobs');
+});
+
+test('lifecycle preserves censored FIFO waits and real backfill start/finish ticks', () => {
+  const s = Engine.createState();
+  Engine.advanceTick(s);
+  assert.ok(Engine.jobLifecycles(s).filter((job) => !job.resident).every((job) =>
+    job.status === 'queued' && job.wait === null && job.waitingAtLeast === 1));
+  s.policy = 'backfill';
+  Engine.resetState(s);
+  Engine.advanceTick(s);
+  let rows = Engine.jobLifecycles(s);
+  const head = rows.find((job) => job.id === 'J09');
+  assert.equal(head.status, 'queued');
+  assert.equal(head.waitingAtLeast, 1);
+  for (const id of ['J10', 'J11', 'J12']) {
+    const job = rows.find((row) => row.id === id);
+    assert.equal(job.status, 'running');
+    assert.equal(job.startedAt, 1);
+    assert.equal(job.wait, 1);
+    assert.equal(job.waitingAtLeast, null);
+    assert.equal(job.remaining, job.duration, 'new starts do not consume runtime on their dispatch tick');
+  }
+  Engine.advanceTick(s);
+  Engine.advanceTick(s);
+  rows = Engine.jobLifecycles(s);
+  const completed = rows.find((job) => job.id === 'J10');
+  assert.equal(completed.status, 'completed');
+  assert.equal(completed.startedAt, 1);
+  assert.equal(completed.finishedAt, 3);
+  assert.equal(completed.wait, 1);
+  assert.deepEqual(completed.slots, [0, 1], 'historical allocation remains inspectable');
+  Engine.advanceTick(s);
+  const resident = Engine.jobLifecycles(s).find((job) => job.id === 'J01');
+  assert.equal(resident.status, 'completed');
+  assert.equal(resident.resident, true);
+  assert.equal(resident.finishedAt, 4);
+  assert.equal(resident.wait, null);
+});
+
+test('custom arrivals use submission time and lifecycle reset removes stale observations', () => {
+  const s = Engine.createState('empty', 'backfill', 'tight');
+  const initial = Engine.jobLifecycles(s);
+  Engine.advanceTick(s);
+  const custom = Engine.submitJob(s, '<custom workload>', 1, 1);
+  let row = Engine.jobLifecycles(s).find((job) => job.id === custom.id);
+  assert.equal(row.submittedAt, 1);
+  assert.equal(row.waitingAtLeast, 0);
+  assert.equal(row.resident, false);
+  Engine.advanceTick(s);
+  Engine.advanceTick(s);
+  row = Engine.jobLifecycles(s).find((job) => job.id === custom.id);
+  assert.equal(row.startedAt, 2);
+  assert.equal(row.finishedAt, 3);
+  assert.equal(row.wait, 1);
+  const before = structuredClone(s);
+  const snapshot = Engine.jobLifecycles(s);
+  Engine.comparePolicies('empty', 'tight', 8);
+  assert.deepEqual(s, before);
+  assert.deepEqual(Engine.jobLifecycles(s), snapshot);
+  Engine.resetState(s);
+  assert.deepEqual(Engine.jobLifecycles(s), initial);
+  assert.equal(s.policy, 'backfill');
+  assert.equal(s.placement, 'tight');
+});

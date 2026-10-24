@@ -29,6 +29,7 @@
     const job = makeJob(id, name, size, duration);
     job.slots = slots;
     job.startedAt = 0;
+    job.initialResident = true;
     state.running.push(job);
     return job;
   }
@@ -188,6 +189,26 @@
     return { used, free, utilization: used / CAPACITY * 100, largest: Math.max(0, ...freeSegments(state).map((segment) => segment.length)) };
   }
 
+  // Pure snapshot for the live inspector; residents are not queue observations.
+  // A queued age is a censored lower bound, never a completed wait.
+  function jobLifecycles(state) {
+    return [...state.queued, ...state.running, ...state.completed]
+      .sort((a, b) => a.id.localeCompare(b.id, 'en', { numeric: true }))
+      .map((job) => {
+        const resident = job.initialResident === true;
+        const status = job.finishedAt !== null ? 'completed' : job.startedAt !== null ? 'running' : 'queued';
+        return {
+          id: job.id, name: job.name, size: job.size, duration: job.duration,
+          remaining: job.remaining, slots: [...job.slots], resident, status,
+          submittedAt: resident ? null : job.submittedAt,
+          startedAt: job.startedAt, finishedAt: job.finishedAt,
+          observedAt: state.time,
+          wait: resident || job.startedAt === null ? null : job.startedAt - job.submittedAt,
+          waitingAtLeast: status === 'queued' ? state.time - job.submittedAt : null,
+        };
+      });
+  }
+
   // Replays a preset from T+00 without touching the UI's live simulation.
   // Only jobs initially queued are counted in queue-level outcome metrics;
   // residents are counted in utilization because they consume real capacity.
@@ -237,5 +258,5 @@
     };
   }
 
-  return { RACKS, SLOTS_PER_RACK, CAPACITY, createState, resetState, submitJob, appendEvent, occupancy, freeSegments, findPlacement, dispatchJobs, advanceTick, metrics, runPolicyTrace, comparePolicies };
+  return { RACKS, SLOTS_PER_RACK, CAPACITY, createState, resetState, submitJob, appendEvent, occupancy, freeSegments, findPlacement, dispatchJobs, advanceTick, metrics, jobLifecycles, runPolicyTrace, comparePolicies };
 });

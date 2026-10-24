@@ -23,6 +23,8 @@ Neither experience should promise to reproduce real HPC, Kubernetes or GPU clust
 | Manual/automatic ticks, reset, custom jobs | Implemented | Non-preemptive, integer-tick jobs |
 | Guided FIFO/backfill lesson and comprehension check | Implemented | Preset conditions, three steps, one optional question |
 | Side-by-side policy replay and metrics | Implemented | Initial queue and fixed 4/8/12 tick horizon |
+| Live per-job lifecycle inspector | Implemented in Sprint 01 branch | Resident waits unknown; queued waits are censored lower bounds |
+| Keyboard slot inspection and readable replay tick values | Implemented in Sprint 01 branch | Local Chromium checks; no screen-reader certification |
 | Versioned share links for built-in presets | Implemented | Encodes scenario, policy, heuristic and horizon only |
 | Custom scenario JSON import/export | Planned | Requires a validated schema and versioned engine contract |
 | Graph topology, GPU network penalties, and contention | Research direction | Not implemented in SchedLab |
