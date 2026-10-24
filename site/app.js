@@ -28,6 +28,7 @@
     stopAutoRun();
     state.lessonStep = state.scenario === 'fragmentation' && state.policy === 'fifo' && state.placement === 'first' ? 0 : -1;
     Engine.resetState(state);
+    clearLessonAnswer();
     if (userReset) appendEvent('Run reset to T+00. Selected policies were kept for fair replay.', 'info');
     render();
     if (userReset) announce('Run reset. Auto run stopped; selected policies kept.');
@@ -102,6 +103,8 @@
       RACKS.forEach((rackName, rackIndex) => {
         const row = document.createElement('div');
         row.className = 'rack-row';
+        row.setAttribute('role', 'group');
+        row.setAttribute('aria-label', `Rack ${rackName}, eight abstract slots`);
         const label = document.createElement('div');
         label.className = 'rack-label';
         label.innerHTML = `RACK ${rackName}<span>8 slots</span>`;
@@ -322,8 +325,7 @@
     $('scenario').value = state.scenario;
     $('policy').value = state.policy;
     $('placement').value = state.placement;
-    document.querySelectorAll('input[name="lesson-reason"]').forEach((radio) => { radio.checked = false; });
-    $('lesson-feedback').textContent = '';
+    clearLessonAnswer();
     Engine.resetState(state);
     showShareStatus('The guided lesson has restored its canonical starting setup. Use Share to copy this preset.');
     render();
@@ -352,6 +354,11 @@
     showShareStatus('The lesson changed your setup. Use Share to copy its selected preset and policy.');
     render();
     announce(LESSON_STAGES[state.lessonStep].body);
+  }
+
+  function clearLessonAnswer() {
+    document.querySelectorAll('input[name="lesson-reason"]').forEach((radio) => { radio.checked = false; });
+    $('lesson-feedback').textContent = '';
   }
 
   function checkLessonAnswer() {
@@ -557,6 +564,9 @@
     $('lesson-action').addEventListener('click', runGuidedStep);
     $('lesson-restart').addEventListener('click', restartLesson);
     $('check-answer').addEventListener('click', checkLessonAnswer);
+    document.querySelectorAll('input[name="lesson-reason"]').forEach((radio) => {
+      radio.addEventListener('change', () => { $('lesson-feedback').textContent = ''; });
+    });
     $('compare-btn').addEventListener('click', renderComparison);
     $('comparison-horizon').addEventListener('change', () => { clearComparison(); showShareStatus('Replay horizon changed. Share creates a new link from the selected options.'); });
     $('share-btn').addEventListener('click', shareSetup);

@@ -18,11 +18,38 @@ const { chromium } = require('playwright');
     const state = () => page.evaluate(() => window.SchedLabDemo.getState());
     const text = (selector) => page.locator(selector).innerText();
     const row = (id) => page.locator('#lifecycle-rows tr').filter({ has: page.locator('th', { hasText: `${id} ·` }) });
+    // Verify browser-exposed semantics, not actual screen-reader speech.
+    await page.keyboard.press('Tab');
+    assert.equal(await page.evaluate(() => document.activeElement.textContent), 'Skip to experiment');
+    await page.keyboard.press('Enter');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'playground');
+    await page.locator('.skip-slots').press('Enter');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'simulation-controls');
+    await page.keyboard.press('Tab');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'step-btn');
+    for (const rack of ['A', 'B', 'C', 'D']) {
+      assert.equal(await page.getByRole('group', { name: `Rack ${rack}, eight abstract slots`, exact: true }).getByRole('button').count(), 8);
+    }
+    assert.match(await page.getByRole('combobox', { name: 'Scheduling policy' }).getAttribute('aria-describedby'), /policy-description/);
+    const cdp = await page.context().newCDPSession(page);
+    const { nodes } = await cdp.send('Accessibility.getFullAXTree');
+    const statuses = nodes.filter((node) => node.role?.value === 'status');
+    assert.equal(statuses.length, 2, 'initially only run and share statuses are exposed');
+    for (const node of statuses) {
+      assert.equal(node.properties.find((prop) => prop.name === 'live')?.value.value, 'polite');
+      assert.equal(node.properties.find((prop) => prop.name === 'atomic')?.value.value, true);
+    }
+    assert.equal(await page.getByRole('group', { name: 'Quick check: why was J09 blocked at T+00?' }).count(), 0, 'hidden quiz must stay out of the accessibility tree');
+    console.log('PASS skip links, rack groups and initial accessibility-tree semantics');
     const initial = await state();
     assert.equal(initial.metrics.free, 16);
     assert.equal(initial.metrics.largest, 2);
     assert.equal(initial.queued[0].size, 4);
     await page.locator('#lifecycle-panel summary').press('Enter');
+    assert.equal(await page.getByRole('region', { name: 'Live job lifecycle table', exact: true }).getByRole('table').count(), 1);
+    const lifecycleSnapshot = await page.locator('.table-scroll').ariaSnapshot();
+    assert.match(lifecycleSnapshot, /columnheader "Queue wait"/);
+    assert.match(lifecycleSnapshot, /Still waiting at least 0 ticks as of T\+00/);
     assert.equal(await page.locator('#lifecycle-rows tr').count(), 12);
     assert.match(await row('J09').innerText(), /not started.*Submitted T\+00.*at least 0 ticks/s);
     assert.match(await row('J01').innerText(), /initial resident.*Unknown before T\+00/s);
@@ -112,6 +139,28 @@ const { chromium } = require('playwright');
     assert.ok(!loaded.queued.some((job) => job.name.startsWith('Custom')));
     await shared.close();
     console.log('PASS lesson/quiz, job form, mode focus and v=1 share fallback/roundtrip');
+
+    // A fresh run must not expose feedback from a previous quiz attempt.
+    await page.locator('#lesson-restart').press('Enter');
+    await page.locator('#lesson-action').press('Enter');
+    await page.locator('#lesson-action').press('Enter');
+    await page.locator('input[value="contiguous"]').check();
+    await page.locator('#check-answer').press('Enter');
+    assert.match(await text('#lesson-feedback'), /Exactly/);
+    await page.locator('input[value="total"]').focus();
+    await page.keyboard.press('Space');
+    assert.equal(await text('#lesson-feedback'), '', 'changing the answer invalidates old feedback');
+    await page.locator('#check-answer').press('Enter');
+    assert.match(await text('#lesson-feedback'), /Not quite/);
+    await page.locator('#policy').selectOption('fifo');
+    await page.locator('#reset-btn').press('Enter');
+    await page.locator('#lesson-action').press('Enter');
+    await page.locator('#lesson-action').press('Enter');
+    assert.equal(await page.locator('input[name="lesson-reason"]:checked').count(), 0);
+    assert.equal(await text('#lesson-feedback'), '');
+    await page.locator('#check-answer').press('Enter');
+    assert.match(await text('#lesson-feedback'), /Choose one/);
+    console.log('PASS fresh quiz after reset and feedback invalidation on answer change');
 
     // Tab reaches every essential control without a trap. Focus appearance is checked.
     await page.locator('#lesson-restart').press('Enter');
