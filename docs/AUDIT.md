@@ -45,3 +45,12 @@ This is a focused audit, not a claim of exhaustive security, accessibility or ma
   have unknown prior waits; unstarted queue observations remain lower bounds.
 - Local Chromium smoke coverage and remaining limits are recorded in
   `CODEX_HANDOFF/SPRINT_01_REPORT.md`. Public deployment has not been verified.
+
+## Post-merge accessibility follow-up
+
+Quiz reset could preserve a previously selected answer and feedback; resetting or
+changing scenarios now clears them, and selecting another answer invalidates the
+old feedback. Native skip links bypass the landing content or 32-slot inspector.
+Named rack groups and lifecycle/table/status semantics were checked in Chromium's
+accessibility tree. Actual speech testing remains pending; see
+`CODEX_HANDOFF/ACCESSIBILITY_FOLLOWUP.md` for evidence and a device checklist.

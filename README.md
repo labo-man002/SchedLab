@@ -64,7 +64,9 @@ node tests/browser-smoke.cjs
 # Override BASE_URL or CHROMIUM_PATH when needed.
 ```
 
-See `docs/CODEX_HANDOFF/SPRINT_01_REPORT.md` for scope, QA evidence and limitations.
+See `docs/CODEX_HANDOFF/SPRINT_01_REPORT.md` for the initial sprint evidence and
+`docs/CODEX_HANDOFF/ACCESSIBILITY_FOLLOWUP.md` for the post-merge fixes and pending
+screen-reader walkthrough.
 
 ## Structure
 
