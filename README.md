@@ -71,6 +71,12 @@ The workflow runs tests, uploads the static `site/` directory and deploys on pus
 
 See [GitHub's documentation on publishing with a custom Actions workflow](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site#publishing-with-a-custom-github-actions-workflow).
 
+## Working with coding agents
+
+The [Codex development handoff](docs/CODEX_HANDOFF/START_HERE.md) gathers the project's background, settled decisions, technical baseline, next bounded sprint, and a [ready-to-paste launch prompt](docs/CODEX_HANDOFF/LAUNCH_PROMPT.md). Agents should also follow the short repository-wide rules in [AGENTS.md](AGENTS.md).
+
+Autonomous agents should develop on review branches and propose pull requests, not merge directly into the `main` branch that deploys this website. The handoff deliberately distinguishes what the website currently implements from future ideas such as GPU network modeling or integration with the separate scheduler simulator.
+
 ## Product direction
 
 The next step is to test whether one precise interactive experiment teaches a useful concept, then make the experiment shareable and inspectable. Later work can explore workload traces, topology-aware placement and integration with the more capable simulator. See [MVP specification](docs/MVP_SPEC.md) and [roadmap](docs/ROADMAP.md).
