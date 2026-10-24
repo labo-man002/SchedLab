@@ -45,6 +45,27 @@ Run deterministic engine tests (Node.js 20+):
 npm test
 ```
 
+## Inspect job lifecycles
+
+Expand **Inspect job lifecycles · live experiment** below the lesson to see each
+job's submission, start and finish ticks. Initial residents were already running
+at T+00; their prior queue waits are unknown. An unstarted job shows a waiting
+lower bound at the current observation tick, not its eventual wait. This live
+view is independent of the controlled FIFO/backfill replay and resets with the run.
+On narrow screens the table scrolls within a labeled, keyboard-focusable region.
+Replay charts also offer **Read tick values** without relying on hover.
+
+An optional browser regression check is available when Playwright and Chromium
+are already installed (neither is a required application dependency):
+
+```bash
+# Keep the documented Python server running in another terminal.
+node tests/browser-smoke.cjs
+# Override BASE_URL or CHROMIUM_PATH when needed.
+```
+
+See `docs/CODEX_HANDOFF/SPRINT_01_REPORT.md` for scope, QA evidence and limitations.
+
 ## Structure
 
 ```text

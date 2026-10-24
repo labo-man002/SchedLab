@@ -43,10 +43,19 @@ The website is the learning and exploration interface. A separate, more capable 
 - Shareable, validated `v=1` preset links for the selected scenario, scheduling policy, placement heuristic and comparison horizon. These restore T+00 without exporting custom jobs or a live state snapshot.
 - Optional single-question comprehension check, shown only at the end of the guided walkthrough, with explanation of the rack-local contiguity constraint.
 
+### Implemented in Sprint 01 review branch
+
+- Optional live per-job lifecycle inspector with initial-resident labels, actual
+  dispatch/completion timestamps and explicitly lower-bounded queued waits.
+- Stable slot keyboard focus across ticks, visible slot inspection, targeted
+  simulation announcements, keyboard-readable replay values and mobile quiz fix.
+- Repeatable optional Chromium smoke checks at desktop, 375 px and 320 px.
+  These local checks do not establish screen-reader or public Pages behavior.
+
 ### Should have — next iteration
 
 - Versioned JSON import/export for **custom** topologies and workloads, including engine version and optional seed; the current share links cover only built-in preset configurations.
-- Job timeline/Gantt, per-job wait inspection, and explicit censored-wait treatment.
+- Graphical job timeline/Gantt beyond the implemented lifecycle table.
 - Better guided onboarding and mobile/accessibility verification.
 - A second focused experiment about placement constraints across topology domains.
 

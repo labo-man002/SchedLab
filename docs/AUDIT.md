@@ -28,3 +28,20 @@ No authentication, cookies, personal-data collection, API keys or backend are pr
 - GitHub Pages version still requires desktop and mobile smoke tests after deployment.
 
 This is a focused audit, not a claim of exhaustive security, accessibility or mathematical verification.
+
+## Sprint 01 local follow-up
+
+- Reproduced focus loss when a tick rebuilt all rack buttons; retained button DOM
+  now preserves focus and updates descriptions from current engine state.
+- Replaced simultaneous queue/event/diagnosis live updates with a concise action
+  status; automatic ticks are silent until stopped. Share and quiz feedback retain
+  their specific status regions. Actual screen-reader speech remains untested.
+- Reproduced a floated quiz legend squeezing the first answer and overflowing
+  narrow screens; removing the float restores readable answers.
+- Added visible keyboard/touch slot details, non-color candidate borders, stronger
+  free-slot text contrast and readable replay values. This is not a full contrast
+  or WCAG audit.
+- Added a canonical, pure lifecycle selector and optional live table. Residents
+  have unknown prior waits; unstarted queue observations remain lower bounds.
+- Local Chromium smoke coverage and remaining limits are recorded in
+  `CODEX_HANDOFF/SPRINT_01_REPORT.md`. Public deployment has not been verified.
