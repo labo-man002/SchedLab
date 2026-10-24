@@ -17,6 +17,7 @@
   state.mode = 'learn';
   state.timer = null;
   state.lessonStep = 0;
+  let inspectedSlot = null;
 
   function appendEvent(message, kind = 'info') {
     return Engine.appendEvent(state, message, kind);
@@ -28,6 +29,11 @@
     Engine.resetState(state);
     if (userReset) appendEvent('Run reset to T+00. Selected policies were kept for fair replay.', 'info');
     render();
+    if (userReset) announce('Run reset. Auto run stopped; selected policies kept.');
+  }
+
+  function announce(message) {
+    $('run-status').textContent = `${message} T+${String(state.time).padStart(2, '0')}: ${state.queued.length} queued, ${state.running.length} running, ${state.completed.length} completed.`;
   }
 
   function addQueued(name, size, duration) {
@@ -46,11 +52,14 @@
     return Engine.metrics(state);
   }
 
-  function step() {
+  function step(shouldAnnounce = true) {
     state.lessonStep = -1;
     Engine.advanceTick(state);
     render();
-    if (state.timer && (state.time >= 30 || (!state.running.length && !state.queued.length))) stopAutoRun();
+    if (state.timer && (state.time >= 30 || (!state.running.length && !state.queued.length))) {
+      stopAutoRun();
+      announce('Auto run stopped.');
+    } else if (shouldAnnounce) announce('Advanced one tick.');
   }
 
   function advanceTicks(count) {
@@ -60,16 +69,26 @@
   function stopAutoRun() {
     if (state.timer) clearInterval(state.timer);
     state.timer = null;
+    $('play-btn').setAttribute('aria-pressed', 'false');
     if ($('play-label')) $('play-label').textContent = 'Auto run';
     if ($('play-icon')) $('play-icon').textContent = '▶';
   }
 
   function toggleAutoRun() {
-    if (state.timer) { stopAutoRun(); return; }
+    if (state.timer) { stopAutoRun(); announce('Auto run paused.'); return; }
     $('play-label').textContent = 'Pause';
     $('play-icon').textContent = 'Ⅱ';
-    state.timer = setInterval(step, 820);
-    step();
+    state.timer = setInterval(() => step(false), 820);
+    $('play-btn').setAttribute('aria-pressed', 'true');
+    step(false);
+    if (state.timer) announce('Auto run started; updates are silent until paused.');
+  }
+
+  function slotDescription(index) {
+    const job = occupancy()[index];
+    const candidate = state.queued.length && (findPlacement(state.queued[0].size) || []).includes(index);
+    const detail = job ? `${job.id}: ${job.name}, ${job.remaining} ticks left` : candidate ? 'Available: candidate for next job' : 'Available';
+    return `Rack ${RACKS[Math.floor(index / SLOTS_PER_RACK)]} / slot ${String(index % SLOTS_PER_RACK + 1).padStart(2, '0')} — ${detail}`;
   }
 
   function renderRackGrid() {
@@ -77,35 +96,39 @@
     const preview = state.queued.length ? findPlacement(state.queued[0].size) : null;
     const previewSet = new Set(preview || []);
     const container = $('rack-grid');
-    container.replaceChildren();
-    RACKS.forEach((rackName, rackIndex) => {
-      const row = document.createElement('div');
-      row.className = 'rack-row';
-      const label = document.createElement('div');
-      label.className = 'rack-label';
-      label.innerHTML = `RACK ${rackName}<span>8 slots</span>`;
-      const slotRow = document.createElement('div');
-      slotRow.className = 'slot-row';
-      for (let n = 0; n < SLOTS_PER_RACK; n += 1) {
-        const globalIndex = rackIndex * SLOTS_PER_RACK + n;
-        const job = occupied[globalIndex];
-        const slot = document.createElement('button');
-        slot.type = 'button';
-        slot.className = `slot${job ? ' occupied' : ''}${previewSet.has(globalIndex) && !job ? ' candidate' : ''}`;
-        const slotNumber = String(n + 1).padStart(2, '0');
-        slot.textContent = slotNumber;
-        const detail = job ? `${job.id}: ${job.name}, ${job.remaining} ticks left` : previewSet.has(globalIndex) ? 'Available: candidate for next job' : 'Available';
-        slot.title = `Rack ${rackName} / slot ${slotNumber} — ${detail}`;
-        slot.setAttribute('aria-label', slot.title);
-        slot.addEventListener('click', () => {
-          appendEvent(`Inspected rack ${rackName}, slot ${slotNumber}: ${detail}.`, 'info');
-          renderEvents();
-        });
-        slotRow.appendChild(slot);
-      }
-      row.append(label, slotRow);
-      container.appendChild(row);
+    // Keep the same buttons across ticks so keyboard focus survives updates.
+    if (!container.children.length) {
+      RACKS.forEach((rackName, rackIndex) => {
+        const row = document.createElement('div');
+        row.className = 'rack-row';
+        const label = document.createElement('div');
+        label.className = 'rack-label';
+        label.innerHTML = `RACK ${rackName}<span>8 slots</span>`;
+        const slotRow = document.createElement('div');
+        slotRow.className = 'slot-row';
+        for (let n = 0; n < SLOTS_PER_RACK; n += 1) {
+          const index = rackIndex * SLOTS_PER_RACK + n;
+          const slot = document.createElement('button');
+          slot.type = 'button';
+          slot.textContent = String(n + 1).padStart(2, '0');
+          slot.setAttribute('aria-controls', 'slot-detail');
+          slot.addEventListener('click', () => {
+            inspectedSlot = index;
+            $('slot-detail').textContent = slotDescription(index);
+            announce(slotDescription(index));
+          });
+          slotRow.appendChild(slot);
+        }
+        row.append(label, slotRow);
+        container.appendChild(row);
+      });
+    }
+    container.querySelectorAll('button').forEach((slot, index) => {
+      slot.className = `slot${occupied[index] ? ' occupied' : ''}${previewSet.has(index) && !occupied[index] ? ' candidate' : ''}`;
+      slot.title = slotDescription(index);
+      slot.setAttribute('aria-label', slot.title);
     });
+    if (inspectedSlot !== null) $('slot-detail').textContent = slotDescription(inspectedSlot);
   }
 
   function renderDiagnosis() {
@@ -272,6 +295,7 @@
     Engine.resetState(state);
     showShareStatus('The guided lesson has restored its canonical starting setup. Use Share to copy this preset.');
     render();
+    announce('Guided lesson restarted.');
   }
 
   function runGuidedStep() {
@@ -279,6 +303,8 @@
     if (state.lessonStep === 2) {
       state.mode = 'lab';
       renderMode();
+      $('lab-mode').focus();
+      announce('Lab mode selected.');
       return;
     }
     stopAutoRun();
@@ -293,6 +319,7 @@
     state.lessonStep += 1;
     showShareStatus('The lesson changed your setup. Use Share to copy its selected preset and policy.');
     render();
+    announce(LESSON_STAGES[state.lessonStep].body);
   }
 
   function checkLessonAnswer() {
@@ -430,6 +457,7 @@
       traces.appendChild(card);
     });
     container.appendChild(traces);
+    announce(`Controlled ${ticks}-tick comparison ready below. Live simulation unchanged.`);
     const footnote = document.createElement('p');
     footnote.className = 'comparison-footnote';
     footnote.textContent = 'Same preset, same placement heuristic, same integer-tick horizon. Mean occupancy includes preset resident jobs. Wait is averaged only over originally queued jobs that actually started; an unstarted job is not assigned an invented wait time. This is a toy model, not a benchmark.';
@@ -460,7 +488,7 @@
     $('step-btn').addEventListener('click', () => { stopAutoRun(); step(); });
     $('play-btn').addEventListener('click', toggleAutoRun);
     $('reset-btn').addEventListener('click', () => initializeScenario(true));
-    $('scenario').addEventListener('change', (event) => { state.scenario = event.target.value; initializeScenario(); clearComparison(); showShareStatus('Setup changed. Share creates a new link from the selected options.'); });
+    $('scenario').addEventListener('change', (event) => { state.scenario = event.target.value; initializeScenario(); announce('Scenario loaded; auto run stopped.'); clearComparison(); showShareStatus('Setup changed. Share creates a new link from the selected options.'); });
     $('policy').addEventListener('change', (event) => {
       stopAutoRun();
       state.policy = event.target.value;
@@ -468,6 +496,7 @@
       appendEvent(`Scheduling policy changed to ${state.policy === 'fifo' ? 'strict FIFO' : 'opportunistic backfill'}. Advance a tick to schedule, or reset for a fair replay.`);
       showShareStatus('Setup changed. Share creates a new link from the selected options.');
       render();
+      announce('Scheduling policy changed. Takes effect on the next tick.');
     });
     $('placement').addEventListener('change', (event) => {
       stopAutoRun();
@@ -477,9 +506,10 @@
       clearComparison();
       showShareStatus('Setup changed. Share creates a new link from the selected options.');
       render();
+      announce('Placement changed. Takes effect on the next tick.');
     });
-    $('learn-mode').addEventListener('click', () => { state.mode = 'learn'; renderMode(); });
-    $('lab-mode').addEventListener('click', () => { state.mode = 'lab'; renderMode(); });
+    $('learn-mode').addEventListener('click', () => { state.mode = 'learn'; renderMode(); announce('Learn mode selected.'); });
+    $('lab-mode').addEventListener('click', () => { state.mode = 'lab'; renderMode(); announce('Lab mode selected.'); });
     $('lesson-action').addEventListener('click', runGuidedStep);
     $('lesson-restart').addEventListener('click', restartLesson);
     $('check-answer').addEventListener('click', checkLessonAnswer);
@@ -495,6 +525,7 @@
       state.lessonStep = -1;
       appendEvent(`${job.id} queued: ${slotsLabel(size)} for ${duration} ticks. Advance a tick to schedule it.`);
       render();
+      announce(`${job.id} added to the queue. Advance a tick to schedule it.`);
     });
   }
 

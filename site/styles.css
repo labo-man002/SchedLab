@@ -62,3 +62,23 @@ button:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid #a5e
 .lesson-check-btn{margin-top:10px;padding:9px 13px;border-radius:4px;color:#bdf7d5;background:#214d3d;border:1px solid #4c906e;font-size:11px}
 .lesson-check-btn:hover{background:#2b654b}
 .lesson-guide .lesson-feedback{color:#bde9c9;font-size:11px;margin:10px 0 0;line-height:1.6}
+
+/* Sprint 01: readable inspection and keyboard/touch controls. */
+input:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--mint);outline-offset:3px}
+.slot.candidate{border-style:dashed;border-width:2px}
+.slot-detail,.run-status{font-size:12px;line-height:1.6;color:#bdd0cf;overflow-wrap:anywhere}
+.slot-detail{margin:16px 0 0}
+.run-status{margin:14px 0 0}
+.settings-caption{min-height:0;margin-bottom:12px}
+.control-hint,.metric-title,.metric-sub,.rack-label span,.cluster-column-labels{color:#a6bfb7}
+button,select{min-height:44px}
+.slot{min-height:44px}
+@media(max-width:600px){
+  .cluster-stage{padding:16px 8px}
+  .rack-row{grid-template-columns:1fr;gap:7px}
+  .rack-label span{display:inline;margin-left:9px}
+  .cluster-column-labels{margin-left:0}
+  .legend{margin-left:0}
+  .slot-row{gap:3px}
+  .hero-side-footer{flex-wrap:wrap}
+}
