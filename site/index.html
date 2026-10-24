@@ -166,6 +166,19 @@
             </section>
           </div>
 
+          <details class="lifecycle-panel" id="lifecycle-panel">
+            <summary>Inspect job lifecycles · live experiment</summary>
+            <p id="lifecycle-help">Inspect when each job was submitted, started and completed. Initial residents already occupy slots at T+00; their prior queue waits are unknown. Still-waiting ages are lower bounds, not completed waits or inputs to the replay's mean wait.</p>
+            <p class="scroll-hint" id="lifecycle-scroll-hint">On narrow screens, scroll the table horizontally; keyboard users can focus this region and use arrow keys.</p>
+            <div class="table-scroll" role="region" aria-label="Live job lifecycle table" aria-describedby="lifecycle-scroll-hint" tabindex="0">
+              <table class="lifecycle-table" aria-describedby="lifecycle-help">
+                <caption id="lifecycle-caption">Live jobs at T+00 · independent of the controlled replay</caption>
+                <thead><tr><th scope="col">Job</th><th scope="col">State</th><th scope="col">Timing</th><th scope="col">Queue wait</th><th scope="col">Allocation / runtime</th></tr></thead>
+                <tbody id="lifecycle-rows"></tbody>
+              </table>
+            </div>
+          </details>
+
           <section class="comparison-panel" aria-labelledby="comparison-title">
             <div class="comparison-heading">
               <div>

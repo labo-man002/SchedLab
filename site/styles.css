@@ -82,3 +82,24 @@ button,select{min-height:44px}
   .slot-row{gap:3px}
   .hero-side-footer{flex-wrap:wrap}
 }
+
+/* Lifecycle details stay optional in Learn and scroll within their own region. */
+.lifecycle-panel{margin-top:17px;padding:20px;border:1px solid #385d52;border-radius:9px;background:#0d2226;min-width:0}
+.lifecycle-panel summary{cursor:pointer;font-size:16px;font-weight:600;color:#d9f3e5;line-height:1.6;min-height:44px;padding:9px 0}
+.lifecycle-panel p{font-size:12px;color:#b9d3c7;line-height:1.7;max-width:850px}
+.lifecycle-panel .scroll-hint{font-size:11px;color:#a6bfb7}
+.table-scroll{max-width:100%;overflow-x:auto;padding:3px}
+.lifecycle-table{width:100%;min-width:700px;border-collapse:collapse;font-size:12px;line-height:1.6;text-align:left}
+.lifecycle-table caption{text-align:left;padding:12px 0;color:#a6f0d2}
+.lifecycle-table th,.lifecycle-table td{padding:12px 10px;border-bottom:1px solid #36534d;vertical-align:top;overflow-wrap:anywhere;max-width:240px}
+.lifecycle-table thead th{color:#a6f0d2}
+.lifecycle-table tbody th{font-weight:500;color:#e4f7eb}
+.lifecycle-table td{color:#bdd0cf}
+@media(max-width:600px){.lifecycle-panel{padding:14px}}
+/* The floated legend previously squeezed the first answer beside it. */
+.lesson-check legend{float:none}
+
+.slot:not(.occupied):not(.candidate){color:#abc8bb}
+.trace-values{margin-top:24px;color:#bdd0cf;font-size:11px;line-height:1.7}
+.trace-values summary{cursor:pointer;min-height:44px;padding:12px 0}
+.trace-values ol{padding-left:22px}

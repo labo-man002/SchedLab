@@ -12,6 +12,7 @@
   const RACKS = Engine.RACKS;
   const SLOTS_PER_RACK = Engine.SLOTS_PER_RACK;
   const $ = (id) => document.getElementById(id);
+  const ticksLabel = (n) => `${n} ${n === 1 ? 'tick' : 'ticks'}`;
   const slotsLabel = (n) => `${n} ${n === 1 ? 'slot' : 'slots'}`;
   const state = Engine.createState();
   state.mode = 'learn';
@@ -191,6 +192,37 @@
       item.append(icon, info, status);
       container.appendChild(item);
     });
+  }
+
+  function renderLifecycles() {
+    const tick = (time) => `T+${String(time).padStart(2, '0')}`;
+    $('lifecycle-caption').textContent = `Live jobs at ${tick(state.time)} · independent of the controlled replay`;
+    const rows = Engine.jobLifecycles(state).map((job) => {
+      const row = document.createElement('tr');
+      const timing = [job.resident ? 'Present at T+00' : `Submitted ${tick(job.submittedAt)}`];
+      if (!job.resident && job.startedAt !== null) timing.push(`Started ${tick(job.startedAt)}`);
+      if (job.finishedAt !== null) timing.push(`Finished ${tick(job.finishedAt)}`);
+      const wait = job.resident ? 'Unknown before T+00 (resident)' : job.wait === null
+        ? `Still waiting at least ${ticksLabel(job.waitingAtLeast)} as of ${tick(job.observedAt)}`
+        : `${ticksLabel(job.wait)} (observed)`;
+      const allocation = job.slots.length
+        ? `Rack ${RACKS[Math.floor(job.slots[0] / SLOTS_PER_RACK)]}, slots ${job.slots.map((slot) => slot % SLOTS_PER_RACK + 1).join(', ')}`
+        : `${slotsLabel(job.size)} requested; not allocated`;
+      const runtime = job.status === 'queued' ? `${job.duration} ticks requested`
+        : job.status === 'completed' ? `${job.duration} ticks run` : `${job.remaining} of ${job.duration} ticks remaining`;
+      [
+        `${job.id} · ${job.name}`,
+        `${job.status === 'queued' ? 'Queued · not started' : job.status === 'running' ? 'Running' : 'Completed'}${job.resident ? ' · initial resident' : ''}`,
+        timing.join(' · '), wait, `${allocation} · ${runtime}`,
+      ].forEach((value, index) => {
+        const cell = document.createElement(index === 0 ? 'th' : 'td');
+        if (index === 0) cell.scope = 'row';
+        cell.textContent = value;
+        row.appendChild(cell);
+      });
+      return row;
+    });
+    $('lifecycle-rows').replaceChildren(...rows);
   }
 
   function renderEvents() {
@@ -453,7 +485,18 @@
         column.append(bar, tick);
         bars.appendChild(column);
       });
-      card.append(title, bars);
+      const values = document.createElement('details');
+      values.className = 'trace-values';
+      const summary = document.createElement('summary');
+      summary.textContent = 'Read tick values';
+      const list = document.createElement('ol');
+      run.timeline.forEach((point) => {
+        const item = document.createElement('li');
+        item.textContent = `T+${point.time}: ${point.usedSlots} / 32 slots occupied; ${point.queuedJobs} queued`;
+        list.appendChild(item);
+      });
+      values.append(summary, list);
+      card.append(title, bars, values);
       traces.appendChild(card);
     });
     container.appendChild(traces);
@@ -480,6 +523,7 @@
     renderRackGrid();
     renderDiagnosis();
     renderQueue();
+    renderLifecycles();
     renderEvents();
     renderMode();
   }
