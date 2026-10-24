@@ -9,6 +9,9 @@ the **same** simulation engine. Favor a clear, correct lesson over feature count
 
 Read `docs/MVP_SPEC.md` before changing product scope, `docs/ROADMAP.md` before starting
 a new milestone, and `docs/AUDIT.md` when fixing a previously identified issue.
+For a multi-hour autonomous development run, start at
+`docs/CODEX_HANDOFF/START_HERE.md`; it links the complete product background,
+engineering baseline, scoped sprint, acceptance tests, and launch instructions.
 
 ## Project map and checks
 
